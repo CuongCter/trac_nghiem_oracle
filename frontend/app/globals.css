@@ -1,0 +1,150 @@
+@import "../styles/fonts.css";
+@import "../styles/tokens.css";
+@import "../styles/antd-overrides.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==== Base body ==== */
+html,
+body {
+  background: var(--color-neutral-primary-soft);
+  color: var(--color-body);
+  font-family: "Elms Sans", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ==== Headings ==== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Delicious Handrawn", cursive;
+  color: var(--color-heading);
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+}
+h2 {
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+}
+h3 {
+  font-size: 26px;
+}
+h4 {
+  font-size: 22px;
+}
+h5 {
+  font-size: 20px;
+}
+h6 {
+  font-size: 18px;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 48px;
+  }
+  h2 {
+    font-size: 40px;
+  }
+  h3 {
+    font-size: 32px;
+  }
+  h4 {
+    font-size: 28px;
+  }
+  h5 {
+    font-size: 24px;
+  }
+  h6 {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  h1 {
+    font-size: 72px;
+  }
+  h2 {
+    font-size: 52px;
+  }
+  h3 {
+    font-size: 40px;
+  }
+  h4 {
+    font-size: 32px;
+  }
+  h5 {
+    font-size: 26px;
+  }
+  h6 {
+    font-size: 22px;
+  }
+}
+
+p {
+  margin: 0 0 16px 0;
+}
+
+a {
+  color: var(--color-fg-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.4s ease;
+}
+a:hover {
+  color: var(--color-fg-brand-strong);
+  text-decoration: none;
+}
+
+/* ==== Focus reset (we use box-shadow rings) ==== */
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* ==== Selection ==== */
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-fg-brand-strong);
+}
+
+/* ==== Scrollbar ==== */
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--color-neutral-primary-soft);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 999px;
+  border: 3px solid var(--color-neutral-primary-soft);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-default-strong);
+}
