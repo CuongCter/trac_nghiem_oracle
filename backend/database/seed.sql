@@ -8,7 +8,7 @@
 INSERT INTO SUBJECTS (NAME, CODE, DESCRIPTION, CREATED_BY)
 SELECT 'Lap trinh Web', 'LTW', 'Mon hoc co so', ID
 FROM USERS
-WHERE EMAIL = 'admin@local'
+WHERE EMAIL = 'admin@example.com'
   AND NOT EXISTS (SELECT 1 FROM SUBJECTS WHERE CODE = 'LTW');
 
 -- Additional index for join performance on attempts.exam_id

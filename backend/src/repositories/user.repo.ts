@@ -91,27 +91,57 @@ export const userRepo = {
     role: Role;
     status: UserStatus;
   }): Promise<User> {
-    const id = await withTransaction(async (conn) => {
-      const result = await conn.execute<{ OUT: number }>(
+    const result = await withTransaction(async (conn) => {
+      const res = await conn.execute(
         `INSERT INTO USERS (FULL_NAME, EMAIL, PASSWORD_HASH, ROLE, STATUS)
-         VALUES (:fullName, :email, :passwordHash, :role, :status)
-         RETURNING ID INTO :id`,
+         VALUES (:p_fullName, :p_email, :p_passwordHash, :p_role, :p_status)
+         RETURNING ID, FULL_NAME, EMAIL, ROLE, STATUS, CREATED_AT, UPDATED_AT INTO :out_id, :out_fullName, :out_email, :out_role, :out_status, :out_createdAt, :out_updatedAt`,
         {
-          fullName: input.fullName,
-          email: input.email,
-          passwordHash: input.passwordHash,
-          role: input.role,
-          status: input.status,
-          id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+          p_fullName: input.fullName,
+          p_email: input.email,
+          p_passwordHash: input.passwordHash,
+          p_role: input.role,
+          p_status: input.status,
+          out_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+          out_fullName: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 200 },
+          out_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 100 },
+          out_role: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 20 },
+          out_status: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 20 },
+          out_createdAt: { dir: oracledb.BIND_OUT, type: oracledb.DATE },
+          out_updatedAt: { dir: oracledb.BIND_OUT, type: oracledb.DATE },
         },
       );
-      const newId = result.outBinds?.id as number | undefined;
-      if (!newId) throw new Error("Failed to retrieve user id");
-      return newId;
+      return res.outBinds;
     });
-    const u = await userRepo.findById(id);
-    if (!u) throw new Error("Failed to load created user");
-    return u;
+
+    if (!result) throw new Error("Failed to create user");
+
+    const row = result as {
+      out_id: number;
+      out_fullName: string;
+      out_email: string;
+      out_role: Role;
+      out_status: UserStatus;
+      out_createdAt: string | Date;
+      out_updatedAt: string | Date;
+    };
+
+    const createdAt = row.out_createdAt instanceof Date
+      ? row.out_createdAt.toISOString()
+      : String(row.out_createdAt);
+    const updatedAt = row.out_updatedAt instanceof Date
+      ? row.out_updatedAt.toISOString()
+      : String(row.out_updatedAt);
+
+    return {
+      _id: String(row.out_id),
+      fullName: row.out_fullName,
+      email: row.out_email,
+      role: row.out_role,
+      status: row.out_status,
+      createdAt,
+      updatedAt,
+    };
   },
 
   async update(

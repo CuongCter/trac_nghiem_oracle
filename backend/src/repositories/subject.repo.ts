@@ -76,21 +76,27 @@ export const subjectRepo = {
   },
 
   async create(input: { name: string; code: string; description?: string; createdBy: number }): Promise<Subject> {
-    const id = await withTransaction(async (conn) => {
-      const result = await conn.execute<{ ID: number }>(
+    const result = await withTransaction(async (conn) => {
+      const res = await conn.execute(
         `INSERT INTO SUBJECTS (NAME, CODE, DESCRIPTION, CREATED_BY)
-         VALUES (:name, :code, :description, :createdBy)
-         RETURNING ID INTO :id`,
+         VALUES (:p_name, :p_code, :p_description, :p_createdBy)
+         RETURNING ID INTO :out_id`,
         {
-          name: input.name,
-          code: input.code,
-          description: input.description ?? null,
-          createdBy: input.createdBy,
-          id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+          p_name: input.name,
+          p_code: input.code,
+          p_description: input.description ?? null,
+          p_createdBy: input.createdBy,
+          out_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
         },
       );
-      return result.outBinds?.id as number;
+      return res.outBinds;
     });
+
+    if (!result) throw new Error("Failed to create subject");
+
+    const outId = result.out_id as number | number[];
+    const id = Array.isArray(outId) ? outId[0] : outId;
+
     const s = await this.findById(id);
     if (!s) throw new Error("Failed to load created subject");
     return s;

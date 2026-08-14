@@ -98,10 +98,11 @@ export async function execute<T = unknown>(
 ): Promise<Run<T>> {
   return withConnection(async (conn) => {
     const res = await conn.execute<T>(sql, binds, options);
+    const outBinds = res.outBinds ?? {};
     return {
       rows: (res.rows ?? []) as T[],
       rowsAffected: res.rowsAffected ?? 0,
-      outBinds: res.outBinds as Record<string, unknown> | undefined,
+      outBinds: outBinds as Record<string, unknown>,
     };
   });
 }

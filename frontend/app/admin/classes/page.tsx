@@ -98,9 +98,7 @@ export default function AdminClassesPage() {
         if (teacher && typeof teacher === "object") {
           return (
             <div className="flex flex-col">
-              <span className="text-small font-medium text-heading">
-                {teacher.fullName}
-              </span>
+              <span className="text-small font-medium text-heading">{teacher.fullName}</span>
               <span className="text-tiny text-body-subtle">{teacher.email}</span>
             </div>
           );
@@ -187,7 +185,7 @@ export default function AdminClassesPage() {
               rowKey="_id"
               loading={loading}
               columns={columns}
-              dataSource={data}
+              dataSource={data?.items ?? []}
               pagination={false}
               locale={{
                 emptyText: (

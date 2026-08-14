@@ -174,7 +174,7 @@ export default function AdminSubjectsPage() {
                 rowKey="_id"
                 loading={loading}
                 columns={columns}
-                dataSource={data ?? []}
+                dataSource={data?.items ?? []}
                 pagination={false}
                 locale={{
                   emptyText: (
