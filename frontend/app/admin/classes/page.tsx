@@ -185,7 +185,7 @@ export default function AdminClassesPage() {
               rowKey="_id"
               loading={loading}
               columns={columns}
-              dataSource={data?.items ?? []}
+              dataSource={data ?? []}
               pagination={false}
               locale={{
                 emptyText: (

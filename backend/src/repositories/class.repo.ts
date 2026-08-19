@@ -1,5 +1,4 @@
 import { execute, withTransaction } from "../config/database";
-import oracledb from "oracledb";
 import type { ClassEntity, UserRef } from "../types/domain";
 
 interface ClassRow {
@@ -79,26 +78,28 @@ export const classRepo = {
   },
 
   async create(input: { name: string; teacherId?: number | null; students: number[] }): Promise<ClassEntity> {
-    const id = await withTransaction(async (conn) => {
-      const result = await conn.execute<{ ID: number }>(
-        `INSERT INTO CLASSES (NAME, TEACHER_ID) VALUES (:name, :teacherId)
-         RETURNING ID INTO :id`,
-        {
-          name: input.name,
-          teacherId: input.teacherId ?? null,
-          id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        },
+    const newId = await withTransaction(async (conn) => {
+      await conn.execute(
+        `INSERT INTO CLASSES (NAME, TEACHER_ID) VALUES (:name, :teacherId)`,
+        { name: input.name, teacherId: input.teacherId ?? null },
       );
-      const newId = result.outBinds?.id as number;
+      const lookup = await conn.execute<{ ID: number }>(
+        `SELECT ID FROM CLASSES WHERE NAME = :name`,
+        { name: input.name },
+      );
+      const id = lookup.rows[0]?.ID;
+      if (id == null) {
+        throw new Error("Không lấy được ID của lớp vừa tạo");
+      }
       for (const sid of input.students) {
         await conn.execute(
           "INSERT INTO CLASS_STUDENTS (CLASS_ID, STUDENT_ID) VALUES (:cid, :sid)",
-          { cid: newId, sid },
+          { cid: id, sid },
         );
       }
-      return newId;
+      return id;
     });
-    const created = await classRepo.findById(id);
+    const created = await classRepo.findById(newId);
     if (!created) throw new Error("Failed to load created class");
     return created;
   },
