@@ -10,6 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { MultiSelect } from "@/components/ui/Select";
+import type { CustomTagProps } from "rc-select/lib/BaseSelect";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { classFormSchema, type ClassFormInput } from "@/lib/validators/common.schema";
@@ -151,7 +152,7 @@ export function ClassFormModal({ open, onClose, editing, onSaved }: ClassFormMod
           </label>
           <MultiSelect
             size="large"
-            className="w-full"
+            className="w-full students-multiselect"
             placeholder="Chọn học viên"
             value={selectedStudents}
             onChange={(v: string[]) => setValue("students", v)}
@@ -163,7 +164,28 @@ export function ClassFormModal({ open, onClose, editing, onSaved }: ClassFormMod
             }
             showSearch
             optionFilterProp="label"
-            maxTagCount={5}
+            maxTagCount="responsive"
+            maxTagPlaceholder={() => "..."}
+            tagRender={({ value, label, closable, onClose }: CustomTagProps) => (
+              <span
+                className="ant-select-selection-item-content inline-flex items-center text-small text-body"
+                style={{ marginInlineEnd: 0 }}
+              >
+                <span className="truncate" style={{ maxWidth: 160 }}>
+                  {label}
+                </span>
+                {closable ? (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="ml-1 text-gray-400 hover:text-danger"
+                    aria-label={`Bỏ chọn ${typeof label === "string" ? label : value}`}
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </span>
+            )}
           />
         </div>
 

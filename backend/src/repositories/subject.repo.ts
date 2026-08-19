@@ -113,12 +113,16 @@ export const subjectRepo = {
     if (input.description !== undefined) { sets.push("DESCRIPTION = :description"); binds.description = input.description; }
     sets.push("UPDATED_AT = SYSTIMESTAMP");
     if (sets.length === 1) return this.findById(id);
-    await execute(`UPDATE SUBJECTS SET ${sets.join(", ")} WHERE ID = :id`, binds);
+    await withTransaction(async (conn) => {
+      await conn.execute(`UPDATE SUBJECTS SET ${sets.join(", ")} WHERE ID = :id`, binds);
+    });
     return this.findById(id);
   },
 
   async remove(id: number): Promise<boolean> {
-    const { rowsAffected } = await execute("DELETE FROM SUBJECTS WHERE ID = :id", { id });
-    return rowsAffected > 0;
+    return withTransaction(async (conn) => {
+      const res = await conn.execute("DELETE FROM SUBJECTS WHERE ID = :id", { id });
+      return (res.rowsAffected ?? 0) > 0;
+    });
   },
 };

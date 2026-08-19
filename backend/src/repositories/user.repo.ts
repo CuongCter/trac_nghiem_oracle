@@ -179,12 +179,16 @@ export const userRepo = {
     sets.push("UPDATED_AT = SYSTIMESTAMP");
     if (sets.length === 1) return this.findById(id);
 
-    await execute(`UPDATE USERS SET ${sets.join(", ")} WHERE ID = :id`, binds);
+    await withTransaction(async (conn) => {
+      await conn.execute(`UPDATE USERS SET ${sets.join(", ")} WHERE ID = :id`, binds);
+    });
     return this.findById(id);
   },
 
   async remove(id: number): Promise<boolean> {
-    const { rowsAffected } = await execute("DELETE FROM USERS WHERE ID = :id", { id });
-    return rowsAffected > 0;
+    return withTransaction(async (conn) => {
+      const res = await conn.execute("DELETE FROM USERS WHERE ID = :id", { id });
+      return (res.rowsAffected ?? 0) > 0;
+    });
   },
 };

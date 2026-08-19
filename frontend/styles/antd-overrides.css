@@ -465,3 +465,32 @@ textarea.ant-input {
   color: #0e574e !important;
   border: 2px solid #b9efe2 !important;
 }
+
+/* ==== Students MultiSelect (inline comma-separated tags) ==== */
+.students-multiselect .ant-select-selection-item {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-inline-end: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: baseline;
+}
+.students-multiselect .ant-select-selection-item:not(:last-child)::after {
+  content: ", ";
+  margin-right: 2px;
+  color: #6f6151;
+}
+.students-multiselect .ant-select-selection-item .ant-select-selection-item-remove {
+  margin-inline-start: 2px;
+  color: #a89878;
+}
+.students-multiselect .ant-select-selection-item .ant-select-selection-item-remove:hover {
+  color: #8b2a20;
+}
+.students-multiselect .ant-select-selection-overflow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+}

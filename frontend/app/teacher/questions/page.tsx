@@ -92,8 +92,8 @@ export default function TeacherQuestionsPage() {
   React.useEffect(() => {
     void (async () => {
       try {
-        const res = (await api.get("/subjects", { params: { limit: 100 } })) as Subject[];
-        setSubjects(res ?? []);
+        const res = (await api.get("/subjects/all")) as Subject[];
+        setSubjects(Array.isArray(res) ? res : []);
       } catch {
         /* ignore */
       }

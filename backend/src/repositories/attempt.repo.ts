@@ -122,12 +122,14 @@ export const attemptRepo = {
   },
 
   async saveAnswer(attemptId: number, questionId: number, selected: OptionLabel): Promise<void> {
-    await execute(
-      `UPDATE ATTEMPT_ANSWERS
-       SET SELECTED_OPTION = :selected
-       WHERE ATTEMPT_ID = :aid AND QUESTION_ID = :qid`,
-      { aid: attemptId, qid: questionId, selected },
-    );
+    await withTransaction(async (conn) => {
+      await conn.execute(
+        `UPDATE ATTEMPT_ANSWERS
+         SET SELECTED_OPTION = :selected
+         WHERE ATTEMPT_ID = :aid AND QUESTION_ID = :qid`,
+        { aid: attemptId, qid: questionId, selected },
+      );
+    });
   },
 
   async markSubmitted(
@@ -135,19 +137,23 @@ export const attemptRepo = {
     status: AttemptStatus,
     isAuto: boolean,
   ): Promise<void> {
-    await execute(
-      `UPDATE EXAM_ATTEMPTS
-       SET STATUS = :status, IS_AUTO_SUBMITTED = :auto, SUBMITTED_AT = SYSTIMESTAMP
-       WHERE ID = :id`,
-      { id: attemptId, status, auto: isAuto ? "Y" : "N" },
-    );
+    await withTransaction(async (conn) => {
+      await conn.execute(
+        `UPDATE EXAM_ATTEMPTS
+         SET STATUS = :status, IS_AUTO_SUBMITTED = :auto, SUBMITTED_AT = SYSTIMESTAMP
+         WHERE ID = :id`,
+        { id: attemptId, status, auto: isAuto ? "Y" : "N" },
+      );
+    });
   },
 
   async recordViolation(attemptId: number, type: string): Promise<void> {
-    await execute(
-      `INSERT INTO VIOLATIONS (ATTEMPT_ID, TYPE) VALUES (:aid, :type)`,
-      { aid: attemptId, type },
-    );
+    await withTransaction(async (conn) => {
+      await conn.execute(
+        `INSERT INTO VIOLATIONS (ATTEMPT_ID, TYPE) VALUES (:aid, :type)`,
+        { aid: attemptId, type },
+      );
+    });
   },
 
   async listExamsTakingExam(examId: number): Promise<{ id: number; status: AttemptStatus }[]> {
@@ -159,11 +165,13 @@ export const attemptRepo = {
   },
 
   async markExpired(): Promise<number> {
-    const { rowsAffected } = await execute(
-      `UPDATE EXAM_ATTEMPTS SET STATUS = 'EXPIRED', SUBMITTED_AT = SYSTIMESTAMP
-       WHERE STATUS = 'IN_PROGRESS' AND END_TIME <= SYSTIMESTAMP`,
-    );
-    return rowsAffected;
+    return withTransaction(async (conn) => {
+      const res = await conn.execute(
+        `UPDATE EXAM_ATTEMPTS SET STATUS = 'EXPIRED', SUBMITTED_AT = SYSTIMESTAMP
+         WHERE STATUS = 'IN_PROGRESS' AND END_TIME <= SYSTIMESTAMP`,
+      );
+      return res.rowsAffected ?? 0;
+    });
   },
 
   async getGradingInputs(

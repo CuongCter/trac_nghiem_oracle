@@ -105,16 +105,11 @@
   /* ==== Shadow tokens (pencil-drawn) ==== */
   --shadow-2xs: 1px 1px 0 0 var(--pencil-ink-soft);
   --shadow-xs: 2px 2px 0 0 var(--pencil-ink);
-  --shadow-sm:
-    3px 3px 0 0 var(--pencil-ink), 4px 4px 0 0 var(--pencil-ink-soft);
-  --shadow-md:
-    4px 4px 0 0 var(--pencil-ink), 6px 6px 0 0 var(--pencil-ink-soft);
-  --shadow-lg:
-    5px 5px 0 0 var(--pencil-ink), 8px 8px 0 0 var(--pencil-ink-soft);
-  --shadow-xl:
-    6px 6px 0 0 var(--pencil-ink), 10px 10px 0 0 var(--pencil-ink-soft);
-  --shadow-2xl:
-    8px 8px 0 0 var(--pencil-ink), 14px 14px 0 0 var(--pencil-ink-soft);
+  --shadow-sm: 3px 3px 0 0 var(--pencil-ink), 4px 4px 0 0 var(--pencil-ink-soft);
+  --shadow-md: 4px 4px 0 0 var(--pencil-ink), 6px 6px 0 0 var(--pencil-ink-soft);
+  --shadow-lg: 5px 5px 0 0 var(--pencil-ink), 8px 8px 0 0 var(--pencil-ink-soft);
+  --shadow-xl: 6px 6px 0 0 var(--pencil-ink), 10px 10px 0 0 var(--pencil-ink-soft);
+  --shadow-2xl: 8px 8px 0 0 var(--pencil-ink), 14px 14px 0 0 var(--pencil-ink-soft);
 }
 
 @media (prefers-color-scheme: dark) {

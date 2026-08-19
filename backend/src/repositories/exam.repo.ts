@@ -228,15 +228,19 @@ export const examRepo = {
   },
 
   async setStatus(id: number, status: ExamStatus): Promise<void> {
-    await execute(`UPDATE EXAMS SET STATUS = :status, UPDATED_AT = SYSTIMESTAMP WHERE ID = :id`, {
-      status,
-      id,
+    await withTransaction(async (conn) => {
+      await conn.execute(
+        `UPDATE EXAMS SET STATUS = :status, UPDATED_AT = SYSTIMESTAMP WHERE ID = :id`,
+        { status, id },
+      );
     });
   },
 
   async remove(id: number): Promise<boolean> {
-    const { rowsAffected } = await execute("DELETE FROM EXAMS WHERE ID = :id", { id });
-    return rowsAffected > 0;
+    return withTransaction(async (conn) => {
+      const res = await conn.execute("DELETE FROM EXAMS WHERE ID = :id", { id });
+      return (res.rowsAffected ?? 0) > 0;
+    });
   },
 
   async findOwnersForExam(examId: number): Promise<string[]> {

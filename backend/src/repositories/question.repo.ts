@@ -152,7 +152,7 @@ export const questionRepo = {
     },
   ): Promise<Question> {
     const byLabel = Object.fromEntries(input.options.map((o) => [o.label, o.text])) as Record<OptionLabel, string>;
-    const id = await withTransaction(async (conn) => {
+    const insertedId = await withTransaction(async (conn) => {
       const result = await conn.execute<{ ID: number }>(
         `INSERT INTO QUESTIONS (SUBJECT_ID, CONTENT, OPTION_A, OPTION_B, OPTION_C, OPTION_D,
           CORRECT_ANSWER, DIFFICULTY, CHAPTER, POINT, CREATED_BY)
@@ -173,9 +173,12 @@ export const questionRepo = {
           id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
         },
       );
-      return result.outBinds?.id as number;
+      const outId = result.outBinds?.id;
+      const id = Array.isArray(outId) ? outId[0] : outId;
+      if (typeof id !== "number") throw new Error("Failed to create question");
+      return id;
     });
-    const q = await this.findById(id, { includeAnswer: true });
+    const q = await this.findById(insertedId, { includeAnswer: true });
     if (!q) throw new Error("Failed to load created question");
     return q;
   },
@@ -231,13 +234,17 @@ export const questionRepo = {
     }
     sets.push("UPDATED_AT = SYSTIMESTAMP");
     if (sets.length === 1) return this.findById(id, { includeAnswer: true });
-    await execute(`UPDATE QUESTIONS SET ${sets.join(", ")} WHERE ID = :id`, binds);
+    await withTransaction(async (conn) => {
+      await conn.execute(`UPDATE QUESTIONS SET ${sets.join(", ")} WHERE ID = :id`, binds);
+    });
     return this.findById(id, { includeAnswer: true });
   },
 
   async remove(id: number): Promise<boolean> {
-    const { rowsAffected } = await execute("DELETE FROM QUESTIONS WHERE ID = :id", { id });
-    return rowsAffected > 0;
+    return withTransaction(async (conn) => {
+      const res = await conn.execute("DELETE FROM QUESTIONS WHERE ID = :id", { id });
+      return (res.rowsAffected ?? 0) > 0;
+    });
   },
 
   async isQuestionInPublishedExam(id: number): Promise<boolean> {

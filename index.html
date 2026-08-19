@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trình Bày CSDL · Hệ Thống Thi Trắc Nghiệm · Oracle 19c</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" defer></script>
+<style>
+  :root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #131826;
+    --bg-card: #1a2033;
+    --bg-elevated: #232a40;
+    --border: #2a3148;
+    --border-light: #3a4160;
+    --text-primary: #e6e9f2;
+    --text-secondary: #a4adc8;
+    --text-muted: #6b7390;
+    --accent: #ff6b35;
+    --accent-light: #ff8c5e;
+    --accent-glow: rgba(255, 107, 53, 0.18);
+    --accent-2: #4ecdc4;
+    --accent-3: #ffe66d;
+    --danger: #ff5e5e;
+    --success: #4ecdc4;
+    --warning: #ffb454;
+    --code-bg: #0d1117;
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-lg: 0 12px 36px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 15px;
+    background-image:
+      radial-gradient(at 20% 10%, rgba(255,107,53,0.06) 0px, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(78,205,196,0.06) 0px, transparent 50%);
+    min-height: 100vh;
+  }
+
+  code, pre, .token { font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace !important; }
+
+  /* ========== Layout ========== */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 0;
+    min-height: 100vh;
+  }
+
+  /* ========== Sidebar ========== */
+  .sidebar {
+    background: linear-gradient(180deg, #0d1322 0%, #0a0e1a 100%);
+    border-right: 1px solid var(--border);
+    padding: 28px 0 80px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .brand {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .brand-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    color: white;
+    font-size: 18px;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+
+  .brand-text { font-weight: 700; font-size: 14px; line-height: 1.3; }
+  .brand-text small { color: var(--text-muted); font-weight: 400; font-size: 11px; display: block; margin-top: 2px; }
+
+  .nav-group { margin-bottom: 20px; }
+  .nav-title {
+    padding: 0 24px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .nav a {
+    display: block;
+    padding: 7px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.18s ease;
+    border-left: 2px solid transparent;
+    position: relative;
+  }
+
+  .nav a:hover {
+    color: var(--text-primary);
+    background: rgba(255,107,53,0.05);
+    border-left-color: var(--accent);
+  }
+
+  .nav a::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 0;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: height 0.18s ease;
+  }
+
+  .nav a:hover::before { height: 60%; }
+
+  /* ========== Main ========== */
+  .main {
+    padding: 48px 56px 80px;
+    max-width: 100%;
+  }
+
+  /* ========== Hero ========== */
+  .hero {
+    background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(78,205,196,0.04));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 48px 44px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px;
+    background: rgba(255,107,53,0.15);
+    border: 1px solid rgba(255,107,53,0.3);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent-light);
+    margin-bottom: 18px;
+  }
+
+  .hero-badge .dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    padding: 5px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-secondary);
+  }
+
+  .tag.oracle { color: var(--accent-3); border-color: rgba(255,230,109,0.4); background: rgba(255,230,109,0.08); }
+  .tag.next   { color: #fff; border-color: rgba(0,0,0,0.4); background: rgba(0,0,0,0.5); }
+
+  /* ========== Stats ========== */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: all 0.2s ease;
+  }
+
+  .stat:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-light);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-label { font-size: 13px; color: var(--text-secondary); }
+  .stat-icon { float: right; opacity: 0.4; font-size: 22px; }
+
+  /* ========== Section ========== */
+  .section {
+    margin-bottom: 56px;
+    scroll-margin-top: 80px;
+  }
+
+  .section h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    letter-spacing: -0.01em;
+  }
+
+  .section h2 .num {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px var(--accent-glow);
+  }
+
+  .section h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 14px;
+    color: var(--text-primary);
+    padding-left: 12px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .section p {
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+
+  .section p code, .section li code {
+    background: var(--bg-card);
+    color: var(--accent-light);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  .section ul, .section ol {
+    color: var(--text-secondary);
+    margin-left: 24px;
+    margin-bottom: 14px;
+  }
+
+  .section li { margin-bottom: 7px; }
+
+  /* ========== Tables ========== */
+  .table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .table-card table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table-card th, .table-card td {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-card thead th {
+    background: rgba(255,107,53,0.05);
+    color: var(--accent-light);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .table-card tbody tr:last-child td { border-bottom: 0; }
+  .table-card tbody tr:hover { background: rgba(255,107,53,0.04); }
+
+  .table-card code {
+    background: rgba(255,107,53,0.1);
+    color: var(--accent-light);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12.5px;
+  }
+
+  /* ========== Code blocks ========== */
+  .code-wrap {
+    position: relative;
+    margin-bottom: 18px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .code-header {
+    background: var(--bg-elevated);
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .code-dots { display: flex; gap: 5px; }
+  .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dots span:nth-child(1) { background: #ff5f57; }
+  .code-dots span:nth-child(2) { background: #ffbd2e; }
+  .code-dots span:nth-child(3) { background: #28c840; }
+
+  .code-lang {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+
+  .copy-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .copy-btn.copied { background: var(--success); border-color: var(--success); color: var(--bg-primary); }
+
+  pre[class*="language-"] {
+    margin: 0 !important;
+    border-radius: 0 0 10px 10px !important;
+    padding: 16px 18px !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    max-height: 600px;
+    overflow: auto;
+  }
+
+  pre[class*="language-"]::-webkit-scrollbar { height: 8px; width: 8px; }
+  pre[class*="language-"]::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+  /* ========== ER Diagram ========== */
+  .er-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .er-svg { max-width: 100%; height: auto; }
+
+  /* ========== Cards (features) ========== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+
+  .feature {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: all 0.18s ease;
+  }
+
+  .feature:hover {
+    border-color: rgba(255,107,53,0.4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .feature-icon {
+    width: 38px; height: 38px;
+    background: var(--bg-elevated);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .feature h4 {
+    font-size: 14.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+
+  .feature p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+  /* ========== Steps ========== */
+  .steps {
+    counter-reset: step;
+    margin: 18px 0;
+  }
+
+  .step {
+    position: relative;
+    padding: 18px 22px 18px 60px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 18px; top: 18px;
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .step h4 { margin-bottom: 6px; font-size: 15px; font-weight: 600; }
+  .step p { color: var(--text-secondary); margin: 0; font-size: 13.5px; }
+
+  /* ========== Footer ========== */
+  footer {
+    margin-top: 60px;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.3));
+    border-radius: 14px;
+  }
+
+  /* ========== Util ========== */
+  .note {
+    background: rgba(78,205,196,0.08);
+    border-left: 3px solid var(--accent-2);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 18px 0;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+
+  .note strong { color: var(--accent-2); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; max-height: 280px; }
+    .main { padding: 28px 22px 60px; }
+    .hero h1 { font-size: 30px; }
+    .hero { padding: 32px 24px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Tab nav */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin: 22px 0 18px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tab {
+    padding: 10px 18px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--text-secondary); }
+
+  .tab.active {
+    color: var(--accent-light);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Anchor highlight */
+  :target { animation: highlight 1.5s ease; }
+  @keyframes highlight {
+    0% { background: rgba(255,107,53,0.1); border-radius: 8px; }
+    100% { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <div class="brand-icon">DB</div>
+        <div class="brand-text">
+          CSDL Thi Trắc Nghiệm
+          <small>Trình bày · Oracle 19c</small>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-group">
+        <div class="nav-title">Tổng quan</div>
+        <a href="#hero">Trang chính</a>
+        <a href="#features">Tính năng</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Lược đồ CSDL</div>
+        <a href="#er-diagram">Sơ đồ ER</a>
+        <a href="#tables">Danh sách bảng</a>
+        <a href="#constraints">Ràng buộc</a>
+        <a href="#indexes">Chỉ mục</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Cài đặt</div>
+        <a href="#install">Cài Oracle</a>
+        <a href="#install-schema">Cài schema</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">SQL Demo</div>
+        <a href="#ddl">DDL</a>
+        <a href="#dml">DML</a>
+        <a href="#queries">Truy vấn</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">PL/SQL</div>
+        <a href="#triggers">Trigger</a>
+        <a href="#procedures">Procedure</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Khác</div>
+        <a href="#conclusion">Kết luận</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ============== MAIN ============== -->
+  <main class="main">
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero-badge"><span class="dot"></span> Bài trình bày · Quản trị CSDL nâng cao</div>
+      <h1>Hệ Thống Quản Lý<br/>Thi Trắc Nghiệm</h1>
+      <p>Hệ thống thi trắc nghiệm 3 vai trò (Admin · Giáo viên · Học viên) với ngân hàng câu hỏi, tạo đề thông minh, chống gian lận realtime và chấm điểm tự động. Toàn bộ sức mạnh xử lý dữ liệu được khai thác từ Oracle 19c.</p>
+      <div class="hero-meta">
+        <span class="tag oracle">Oracle 19c</span>
+        <span class="tag next">Next.js 14</span>
+        <span class="tag">Node.js 20</span>
+        <span class="tag">TypeScript 5</span>
+        <span class="tag">Express 4</span>
+        <span class="tag">Socket.IO 4</span>
+        <span class="tag">Ant Design 5</span>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat"><span class="stat-icon">🗂️</span><div class="stat-value">13</div><div class="stat-label">Bảng dữ liệu</div></div>
+      <div class="stat"><span class="stat-icon">🔗</span><div class="stat-value">20+</div><div class="stat-label">Khóa ngoại</div></div>
+      <div class="stat"><span class="stat-icon">⚡</span><div class="stat-value">11</div><div class="stat-label">Chỉ mục (index)</div></div>
+      <div class="stat"><span class="stat-icon">🎯</span><div class="stat-value">3</div><div class="stat-label">Vai trò người dùng</div></div>
+    </div>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+      <h2><span class="num">1</span> Giới thiệu dự án</h2>
+
+      <h3>🎯 Bối cảnh</h3>
+      <p>Trong các cơ sở đào tạo hiện nay, việc tổ chức <strong>thi trắc nghiệm</strong> vẫn còn nhiều hạn chế: tốn thời gian in ấn đề, chấm bài thủ công; khó thống kê; khó đảm bảo tính công bằng và chống gian lận. Dự án ra đời nhằm <strong>số hóa toàn bộ quy trình</strong> Tạo đề → Phân công → Làm bài → Chấm điểm → Báo cáo.</p>
+
+      <h3>🚀 Tính năng nổi bật</h3>
+      <div class="card-grid">
+        <div class="feature">
+          <div class="feature-icon">📚</div>
+          <h4>Ngân hàng câu hỏi</h4>
+          <p>4 đáp án A/B/C/D, độ khó EASY/MEDIUM/HARD, chương, điểm.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎲</div>
+          <h4>Tạo đề thông minh</h4>
+          <p>Chọn thủ công HOẶC random theo độ khó, theo tỉ lệ tùy chỉnh.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">👥</div>
+          <h4>Phân công lớp</h4>
+          <p>Một đề có thể giao cho nhiều lớp; học viên lớp nào sẽ thấy đề đó.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⏱️</div>
+          <h4>Làm bài có kiểm soát</h4>
+          <p>Đếm ngược, xáo trộn câu/đáp án, auto-submit khi hết giờ.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🛡️</div>
+          <h4>Chống gian lận</h4>
+          <p>Phát hiện tab switch, thoát fullscreen, gửi cảnh báo realtime cho giáo viên.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <h4>Báo cáo thống kê</h4>
+          <p>Dashboard tổng quan, thống kê theo đề/lớp/học viên, biểu đồ trực quan.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔐</div>
+          <h4>Phân quyền 3 vai trò</h4>
+          <p>ADMIN · TEACHER · STUDENT, JWT stateless + bcrypt hash.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🏆</div>
+          <h4>Chấm điểm tự động</h4>
+          <p>So đáp án, tính điểm theo thang 10, đánh dấu ĐẠT/CHƯA ĐẠT.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ER DIAGRAM -->
+    <section class="section" id="er-diagram">
+      <h2><span class="num">2</span> Lược đồ cơ sở dữ liệu</h2>
+      <h3>📐 Sơ đồ ER (Entity Relationship)</h3>
+      <p>Mô hình gồm <strong>13 bảng</strong> chia thành 3 nhóm: danh mục (USERS · SUBJECTS · CLASSES), ngân hàng đề (QUESTIONS · EXAMS · EXAM_QUESTIONS · EXAM_CLASSES), và quá trình thi (EXAM_ATTEMPTS · ATTEMPT_ANSWERS · VIOLATIONS · EXAM_RESULTS · RESULT_ANSWERS).</p>
+
+      <div class="er-wrap">
+        <svg viewBox="0 0 1100 720" class="er-svg" xmlns="http://www.w3.org/2000/svg" style="font-family: 'JetBrains Mono', monospace;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff6b35" />
+            </marker>
+            <linearGradient id="boxGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#232a40"/>
+              <stop offset="100%" stop-color="#1a2033"/>
+            </linearGradient>
+            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+            </filter>
+          </defs>
+
+          <!-- Title -->
+          <text x="550" y="28" text-anchor="middle" fill="#a4adc8" font-size="14" font-weight="600">SƠ ĐỒ ER - Hệ Thống Thi Trắc Nghiệm (13 bảng, 20+ quan hệ)</text>
+
+          <!-- USERS -->
+          <g filter="url(#shadow)">
+            <rect x="40" y="280" width="170" height="120" rx="10" fill="url(#boxGrad)" stroke="#ff6b35" stroke-width="2"/>
+            <text x="125" y="305" text-anchor="middle" fill="#ff6b35" font-size="13" font-weight="700">USERS</text>
+            <line x1="50" y1="315" x2="200" y2="315" stroke="#2a3148"/>
+            <text x="50" y="335" fill="#e6e9f2" font-size="11">🔑 ID</text>
+            <text x="50" y="353" fill="#a4adc8" font-size="11">FULL_NAME, EMAIL</text>
+            <text x="50" y="371" fill="#a4adc8" font-size="11">ROLE, STATUS</text>
+            <text x="50" y="389" fill="#6b7390" font-size="10">PASSWORD_HASH (bcrypt)</text>
+          </g>
+
+          <!-- SUBJECTS -->
+          <g filter="url(#shadow)">
+            <rect x="290" y="100" width="170" height="105" rx="10" fill="url(#boxGrad)" stroke="#4ecdc4" stroke-width="2"/>
+            <text x="375" y="125" text-anchor="middle" fill="#4ecdc4" font-size="13" font-weight="700">SUBJECTS</text>
+            <line x1="300" y1="135" x2="450" y2="135" stroke="#2a3148"/>
+            <text x="300" y="155" fill="#e6e9f2" font-size="11">🔑 ID, NAME, CODE</text>
+            <text x="300" y="173" fill="#a4adc8" font-size="11">DESCRIPTION</text>
+            <text x="300" y="191" fill="#a4adc8" font-size="11">CREATED_BY → USERS</text>
+          </g>
+
+          <!-- QUESTIONS -->
+          <g filter="url(#shadow)">
+            <rect x="540" y="50" width="190" height="135" rx="10" fill="url(#boxGrad)" stroke="#4ecdc4" stroke-width="2"/>
+            <text x="635" y="75" text-anchor="middle" fill="#4ecdc4" font-size="13" font-weight="700">QUESTIONS</text>
+            <line x1="550" y1="85" x2="720" y2="85" stroke="#2a3148"/>
+            <text x="550" y="105" fill="#e6e9f2" font-size="11">🔑 ID, CONTENT</text>
+            <text x="550" y="123" fill="#a4adc8" font-size="11">OPTION_A..D</text>
+            <text x="550" y="141" fill="#a4adc8" font-size="11">CORRECT_ANSWER</text>
+            <text x="550" y="159" fill="#a4adc8" font-size="11">DIFFICULTY, POINT</text>
+            <text x="550" y="177" fill="#6b7390" font-size="10">CHAPTER</text>
+          </g>
+
+          <!-- CLASSES -->
+          <g filter="url(#shadow)">
+            <rect x="290" y="320" width="170" height="100" rx="10" fill="url(#boxGrad)" stroke="#ffe66d" stroke-width="2"/>
+            <text x="375" y="345" text-anchor="middle" fill="#ffe66d" font-size="13" font-weight="700">CLASSES</text>
+            <line x1="300" y1="355" x2="450" y2="355" stroke="#2a3148"/>
+            <text x="300" y="375" fill="#e6e9f2" font-size="11">🔑 ID, NAME</text>
+            <text x="300" y="393" fill="#a4adc8" font-size="11">TEACHER_ID → USERS</text>
+            <text x="300" y="411" fill="#6b7390" font-size="10">CREATED_AT</text>
+          </g>
+
+          <!-- CLASS_STUDENTS -->
+          <g filter="url(#shadow)">
+            <rect x="290" y="490" width="170" height="80" rx="10" fill="url(#boxGrad)" stroke="#ffe66d" stroke-width="1.5"/>
+            <text x="375" y="515" text-anchor="middle" fill="#ffe66d" font-size="12" font-weight="700">CLASS_STUDENTS</text>
+            <line x1="300" y1="525" x2="450" y2="525" stroke="#2a3148"/>
+            <text x="300" y="545" fill="#a4adc8" font-size="11">CLASS_ID → CLASSES</text>
+            <text x="300" y="563" fill="#a4adc8" font-size="11">STUDENT_ID → USERS</text>
+          </g>
+
+          <!-- EXAMS -->
+          <g filter="url(#shadow)">
+            <rect x="540" y="240" width="190" height="135" rx="10" fill="url(#boxGrad)" stroke="#ff6b35" stroke-width="2"/>
+            <text x="635" y="265" text-anchor="middle" fill="#ff6b35" font-size="13" font-weight="700">EXAMS</text>
+            <line x1="550" y1="275" x2="720" y2="275" stroke="#2a3148"/>
+            <text x="550" y="295" fill="#e6e9f2" font-size="11">🔑 ID, TITLE</text>
+            <text x="550" y="313" fill="#a4adc8" font-size="11">SUBJECT_ID → SUBJECTS</text>
+            <text x="550" y="331" fill="#a4adc8" font-size="11">DURATION_MINUTES</text>
+            <text x="550" y="349" fill="#a4adc8" font-size="11">STATUS (DRAFT/PUBLISHED/...)</text>
+            <text x="550" y="367" fill="#6b7390" font-size="10">START_TIME, END_TIME</text>
+          </g>
+
+          <!-- EXAM_QUESTIONS -->
+          <g filter="url(#shadow)">
+            <rect x="800" y="50" width="180" height="80" rx="10" fill="url(#boxGrad)" stroke="#ff6b35" stroke-width="1.5"/>
+            <text x="890" y="75" text-anchor="middle" fill="#ff6b35" font-size="12" font-weight="700">EXAM_QUESTIONS</text>
+            <line x1="810" y1="85" x2="970" y2="85" stroke="#2a3148"/>
+            <text x="810" y="105" fill="#a4adc8" font-size="11">EXAM_ID, QUESTION_ID</text>
+          </g>
+
+          <!-- EXAM_CLASSES -->
+          <g filter="url(#shadow)">
+            <rect x="800" y="270" width="180" height="75" rx="10" fill="url(#boxGrad)" stroke="#ff6b35" stroke-width="1.5"/>
+            <text x="890" y="295" text-anchor="middle" fill="#ff6b35" font-size="12" font-weight="700">EXAM_CLASSES</text>
+            <line x1="810" y1="305" x2="970" y2="305" stroke="#2a3148"/>
+            <text x="810" y="325" fill="#a4adc8" font-size="11">EXAM_ID, CLASS_ID</text>
+          </g>
+
+          <!-- EXAM_ATTEMPTS -->
+          <g filter="url(#shadow)">
+            <rect x="540" y="430" width="190" height="135" rx="10" fill="url(#boxGrad)" stroke="#ffb454" stroke-width="2"/>
+            <text x="635" y="455" text-anchor="middle" fill="#ffb454" font-size="13" font-weight="700">EXAM_ATTEMPTS</text>
+            <line x1="550" y1="465" x2="720" y2="465" stroke="#2a3148"/>
+            <text x="550" y="485" fill="#e6e9f2" font-size="11">🔑 ID</text>
+            <text x="550" y="503" fill="#a4adc8" font-size="11">EXAM_ID, STUDENT_ID</text>
+            <text x="550" y="521" fill="#a4adc8" font-size="11">STATUS, END_TIME</text>
+            <text x="550" y="539" fill="#a4adc8" font-size="11">IS_AUTO_SUBMITTED</text>
+            <text x="550" y="557" fill="#6b7390" font-size="10">UNIQUE(EXAM_ID,STUDENT_ID)</text>
+          </g>
+
+          <!-- ATTEMPT_ANSWERS -->
+          <g filter="url(#shadow)">
+            <rect x="800" y="430" width="180" height="95" rx="10" fill="url(#boxGrad)" stroke="#ffb454" stroke-width="1.5"/>
+            <text x="890" y="455" text-anchor="middle" fill="#ffb454" font-size="12" font-weight="700">ATTEMPT_ANSWERS</text>
+            <line x1="810" y1="465" x2="970" y2="465" stroke="#2a3148"/>
+            <text x="810" y="485" fill="#a4adc8" font-size="11">ATTEMPT_ID</text>
+            <text x="810" y="503" fill="#a4adc8" font-size="11">QUESTION_ID</text>
+            <text x="810" y="521" fill="#a4adc8" font-size="11">SELECTED_OPTION</text>
+          </g>
+
+          <!-- VIOLATIONS -->
+          <g filter="url(#shadow)">
+            <rect x="290" y="620" width="170" height="80" rx="10" fill="url(#boxGrad)" stroke="#ff5e5e" stroke-width="1.5"/>
+            <text x="375" y="645" text-anchor="middle" fill="#ff5e5e" font-size="12" font-weight="700">VIOLATIONS</text>
+            <line x1="300" y1="655" x2="450" y2="655" stroke="#2a3148"/>
+            <text x="300" y="675" fill="#a4adc8" font-size="11">ATTEMPT_ID, TYPE</text>
+            <text x="300" y="693" fill="#6b7390" font-size="10">OCCURRED_AT</text>
+          </g>
+
+          <!-- EXAM_RESULTS -->
+          <g filter="url(#shadow)">
+            <rect x="540" y="620" width="190" height="85" rx="10" fill="url(#boxGrad)" stroke="#4ecdc4" stroke-width="2"/>
+            <text x="635" y="645" text-anchor="middle" fill="#4ecdc4" font-size="13" font-weight="700">EXAM_RESULTS</text>
+            <line x1="550" y1="655" x2="720" y2="655" stroke="#2a3148"/>
+            <text x="550" y="675" fill="#e6e9f2" font-size="11">🔑 ID, SCORE, PASSED</text>
+            <text x="550" y="693" fill="#a4adc8" font-size="11">TOTAL_CORRECT/WRONG</text>
+          </g>
+
+          <!-- RESULT_ANSWERS -->
+          <g filter="url(#shadow)">
+            <rect x="800" y="575" width="180" height="80" rx="10" fill="url(#boxGrad)" stroke="#4ecdc4" stroke-width="1.5"/>
+            <text x="890" y="600" text-anchor="middle" fill="#4ecdc4" font-size="12" font-weight="700">RESULT_ANSWERS</text>
+            <line x1="810" y1="610" x2="970" y2="610" stroke="#2a3148"/>
+            <text x="810" y="630" fill="#a4adc8" font-size="11">RESULT_ID, QUESTION_ID</text>
+            <text x="810" y="648" fill="#a4adc8" font-size="11">SELECTED_OPTION, IS_CORRECT</text>
+          </g>
+
+          <!-- ============== RELATIONSHIPS ============== -->
+          <!-- USERS → SUBJECTS (CREATED_BY) -->
+          <line x1="210" y1="280" x2="290" y2="175" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.8"/>
+          <text x="225" y="225" fill="#a4adc8" font-size="9" transform="rotate(-30, 225, 225)">tạo</text>
+
+          <!-- USERS → QUESTIONS (CREATED_BY) -->
+          <line x1="210" y1="295" x2="540" y2="135" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.7"/>
+          <text x="350" y="200" fill="#a4adc8" font-size="9">tạo</text>
+
+          <!-- SUBJECTS → QUESTIONS -->
+          <line x1="460" y1="160" x2="540" y2="140" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- USERS → CLASSES (TEACHER) -->
+          <line x1="210" y1="360" x2="290" y2="365" stroke="#ffe66d" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.8"/>
+          <text x="230" y="355" fill="#a4adc8" font-size="9">phụ trách</text>
+
+          <!-- CLASSES → CLASS_STUDENTS -->
+          <line x1="375" y1="420" x2="375" y2="490" stroke="#ffe66d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- USERS → CLASS_STUDENTS (STUDENT_ID) -->
+          <line x1="170" y1="400" x2="290" y2="525" stroke="#ffe66d" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.7"/>
+          <text x="200" y="470" fill="#a4adc8" font-size="9">thành viên</text>
+
+          <!-- SUBJECTS → EXAMS -->
+          <line x1="460" y1="180" x2="635" y2="240" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- USERS → EXAMS (CREATED_BY) -->
+          <line x1="210" y1="340" x2="540" y2="330" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.6"/>
+          <text x="290" y="320" fill="#a4adc8" font-size="9">tạo</text>
+
+          <!-- EXAMS → EXAM_QUESTIONS -->
+          <line x1="635" y1="240" x2="890" y2="130" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="780" y="180" fill="#a4adc8" font-size="9">gồm câu</text>
+
+          <!-- QUESTIONS → EXAM_QUESTIONS -->
+          <line x1="730" y1="115" x2="800" y2="105" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- EXAMS → EXAM_CLASSES -->
+          <line x1="730" y1="305" x2="800" y2="305" stroke="#ff6b35" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- CLASSES → EXAM_CLASSES -->
+          <line x1="460" y1="370" x2="800" y2="320" stroke="#ffe66d" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.7"/>
+          <text x="620" y="340" fill="#a4adc8" font-size="9">gán cho lớp</text>
+
+          <!-- EXAMS → EXAM_ATTEMPTS -->
+          <line x1="635" y1="375" x2="635" y2="430" stroke="#ffb454" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="645" y="410" fill="#a4adc8" font-size="9">được thi</text>
+
+          <!-- USERS → EXAM_ATTEMPTS (STUDENT_ID) -->
+          <line x1="210" y1="385" x2="540" y2="490" stroke="#ffb454" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.7"/>
+          <text x="380" y="450" fill="#a4adc8" font-size="9">làm bài</text>
+
+          <!-- EXAM_ATTEMPTS → ATTEMPT_ANSWERS -->
+          <line x1="730" y1="475" x2="800" y2="470" stroke="#ffb454" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="745" y="465" fill="#a4adc8" font-size="9">đáp án</text>
+
+          <!-- QUESTIONS → ATTEMPT_ANSWERS -->
+          <line x1="710" y1="185" x2="830" y2="430" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.5" stroke-dasharray="3,3"/>
+
+          <!-- EXAM_ATTEMPTS → VIOLATIONS -->
+          <line x1="540" y1="495" x2="460" y2="650" stroke="#ff5e5e" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.7"/>
+          <text x="470" y="590" fill="#a4adc8" font-size="9">vi phạm</text>
+
+          <!-- EXAM_ATTEMPTS → EXAM_RESULTS -->
+          <line x1="635" y1="565" x2="635" y2="620" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="645" y="595" fill="#a4adc8" font-size="9">kết quả</text>
+
+          <!-- EXAM_RESULTS → RESULT_ANSWERS -->
+          <line x1="730" y1="640" x2="800" y2="615" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arrow)" opacity="0.8"/>
+
+          <!-- Legend -->
+          <g transform="translate(40, 60)">
+            <rect width="270" height="170" rx="8" fill="rgba(35,42,64,0.6)" stroke="#2a3148"/>
+            <text x="14" y="22" fill="#e6e9f2" font-size="12" font-weight="700">CHÚ THÍCH MÀU</text>
+            <line x1="14" y1="50" x2="50" y2="50" stroke="#ff6b35" stroke-width="2"/>
+            <text x="60" y="54" fill="#a4adc8" font-size="10">Bảng lõi: người dùng, đề</text>
+            <line x1="14" y1="74" x2="50" y2="74" stroke="#4ecdc4" stroke-width="2"/>
+            <text x="60" y="78" fill="#a4adc8" font-size="10">Ngân hàng câu hỏi / Kết quả</text>
+            <line x1="14" y1="98" x2="50" y2="98" stroke="#ffe66d" stroke-width="2"/>
+            <text x="60" y="102" fill="#a4adc8" font-size="10">Lớp học &amp; phân công</text>
+            <line x1="14" y1="122" x2="50" y2="122" stroke="#ffb454" stroke-width="2"/>
+            <text x="60" y="126" fill="#a4adc8" font-size="10">Quá trình thi (attempt)</text>
+            <line x1="14" y1="146" x2="50" y2="146" stroke="#ff5e5e" stroke-width="2"/>
+            <text x="60" y="150" fill="#a4adc8" font-size="10">Gian lận / vi phạm</text>
+            <text x="14" y="166" fill="#6b7390" font-size="9">🔑 = Khóa chính · → = quan hệ</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- TABLES LIST -->
+    <section class="section" id="tables">
+      <h2><span class="num">3</span> Danh sách bảng &amp; vai trò</h2>
+      <p>Mỗi bảng đều có <code>ID</code> tự tăng (<code>NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY</code>), cùng các cột <code>CREATED_AT</code> / <code>UPDATED_AT</code> theo dõi lịch sử.</p>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th style="width:60px;">#</th><th>Bảng</th><th>Mục đích</th><th>Một vài ràng buộc đáng chú ý</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><code>USERS</code></td><td>Tài khoản hệ thống</td><td><code>ROLE IN ('ADMIN','TEACHER','STUDENT')</code>, <code>STATUS IN ('ACTIVE','LOCKED')</code></td></tr>
+            <tr><td>2</td><td><code>SUBJECTS</code></td><td>Môn học</td><td><code>CODE UNIQUE</code>, FK <code>CREATED_BY → USERS</code></td></tr>
+            <tr><td>3</td><td><code>QUESTIONS</code></td><td>Ngân hàng câu hỏi</td><td><code>CORRECT_ANSWER IN ('A','B','C','D')</code>, <code>POINT (0,100]</code></td></tr>
+            <tr><td>4</td><td><code>CLASSES</code></td><td>Lớp học</td><td><code>NAME UNIQUE</code>, FK <code>TEACHER_ID</code></td></tr>
+            <tr><td>5</td><td><code>CLASS_STUDENTS</code></td><td>Quan hệ N-N Lớp - SV</td><td>Khóa chính ghép (CLASS_ID, STUDENT_ID)</td></tr>
+            <tr><td>6</td><td><code>EXAMS</code></td><td>Đề thi</td><td><code>STATUS IN ('DRAFT','PUBLISHED','CLOSED')</code>, <code>END_TIME > START_TIME</code></td></tr>
+            <tr><td>7</td><td><code>EXAM_QUESTIONS</code></td><td>Quan hệ N-N Đề - Câu hỏi</td><td>Khóa chính ghép, có <code>POSITION</code></td></tr>
+            <tr><td>8</td><td><code>EXAM_CLASSES</code></td><td>Gán lớp cho đề</td><td>Khóa chính ghép (EXAM_ID, CLASS_ID)</td></tr>
+            <tr><td>9</td><td><code>EXAM_ATTEMPTS</code></td><td>Lượt thi</td><td><code>UNIQUE(EXAM_ID, STUDENT_ID)</code> — chỉ 1 attempt/đề</td></tr>
+            <tr><td>10</td><td><code>ATTEMPT_ANSWERS</code></td><td>Đáp án đang chọn</td><td><code>SELECTED_OPTION</code> có thể NULL</td></tr>
+            <tr><td>11</td><td><code>VIOLATIONS</code></td><td>Nhật ký gian lận</td><td>Log <code>TAB_SWITCH</code>, <code>FULLSCREEN_EXIT</code>, ...</td></tr>
+            <tr><td>12</td><td><code>EXAM_RESULTS</code></td><td>Kết quả sau chấm</td><td><code>SCORE</code>, <code>PASSED CHAR(1)</code></td></tr>
+            <tr><td>13</td><td><code>RESULT_ANSWERS</code></td><td>Chi tiết đáp án</td><td><code>IS_CORRECT CHAR(1)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONSTRAINTS -->
+    <section class="section" id="constraints">
+      <h2><span class="num">4</span> Ràng buộc toàn vẹn (Constraints)</h2>
+      <p>Các ràng buộc <code>CHECK</code> giúp Oracle ngăn chặn <strong>dữ liệu rác ngay tầng database</strong>, không cần thêm validation phức tạp ở backend.</p>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="ctab1">CHECK</button>
+        <button class="tab" data-tab="ctab2">UNIQUE</button>
+        <button class="tab" data-tab="ctab3">FOREIGN KEY</button>
+      </div>
+
+      <div class="tab-panel active" id="ctab1">
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · CHECK Constraints</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Trên bảng USERS
+ALTER TABLE USERS ADD CONSTRAINT USERS_ROLE_CHK   CHECK (ROLE   IN ('ADMIN','TEACHER','STUDENT'));
+ALTER TABLE USERS ADD CONSTRAINT USERS_STATUS_CHK CHECK (STATUS IN ('ACTIVE','LOCKED'));
+
+-- Trên bảng QUESTIONS
+ALTER TABLE QUESTIONS ADD CONSTRAINT QUESTIONS_CORRECT_CHK CHECK (CORRECT_ANSWER IN ('A','B','C','D'));
+ALTER TABLE QUESTIONS ADD CONSTRAINT QUESTIONS_DIFF_CHK    CHECK (DIFFICULTY     IN ('EASY','MEDIUM','HARD'));
+ALTER TABLE QUESTIONS ADD CONSTRAINT QUESTIONS_POINT_CHK   CHECK (POINT > 0 AND POINT <= 100);
+
+-- Trên bảng EXAMS
+ALTER TABLE EXAMS ADD CONSTRAINT EXAMS_STATUS_CHK    CHECK (STATUS IN ('DRAFT','PUBLISHED','CLOSED'));
+ALTER TABLE EXAMS ADD CONSTRAINT EXAMS_TIME_CHK      CHECK (END_TIME > START_TIME);
+ALTER TABLE EXAMS ADD CONSTRAINT EXAMS_DURATION_CHK  CHECK (DURATION_MINUTES > 0);
+
+-- Trên bảng EXAM_ATTEMPTS
+ALTER TABLE EXAM_ATTEMPTS ADD CONSTRAINT ATTEMPTS_STATUS_CHK CHECK (STATUS IN ('IN_PROGRESS','SUBMITTED','EXPIRED'));
+
+-- Trên bảng ATTEMPT_ANSWERS
+ALTER TABLE ATTEMPT_ANSWERS ADD CONSTRAINT ATTEMPT_ANSWERS_OPT_CHK
+  CHECK (SELECTED_OPTION IS NULL OR SELECTED_OPTION IN ('A','B','C','D'));</code></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="ctab2">
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · UNIQUE Constraints</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Đảm bảo email không trùng
+ALTER TABLE USERS           ADD CONSTRAINT USERS_EMAIL_UN    UNIQUE (EMAIL);
+ALTER TABLE SUBJECTS        ADD CONSTRAINT SUBJECTS_CODE_UN  UNIQUE (CODE);
+ALTER TABLE CLASSES         ADD CONSTRAINT CLASSES_NAME_UN   UNIQUE (NAME);
+
+-- Mỗi sinh viên chỉ có một attempt và một kết quả cho mỗi đề
+ALTER TABLE EXAM_ATTEMPTS   ADD CONSTRAINT ATTEMPTS_UN       UNIQUE (EXAM_ID, STUDENT_ID);
+ALTER TABLE EXAM_RESULTS    ADD CONSTRAINT RESULTS_UN        UNIQUE (EXAM_ID, STUDENT_ID);
+
+-- Khóa chính ghép cho bảng trung gian
+ALTER TABLE CLASS_STUDENTS  ADD CONSTRAINT CLASS_STUDENTS_PK PRIMARY KEY (CLASS_ID, STUDENT_ID);
+ALTER TABLE EXAM_QUESTIONS  ADD CONSTRAINT EXAM_QUESTIONS_PK PRIMARY KEY (EXAM_ID, QUESTION_ID);
+ALTER TABLE EXAM_CLASSES    ADD CONSTRAINT EXAM_CLASSES_PK   PRIMARY KEY (EXAM_ID, CLASS_ID);</code></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="ctab3">
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · FOREIGN KEY (ràng buộc toàn vẹn tham chiếu)</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Bảng SUBJECTS: người tạo có thể bị xóa → giữ môn học
+ALTER TABLE SUBJECTS ADD CONSTRAINT SUBJECTS_CREATED_BY_FK
+  FOREIGN KEY (CREATED_BY) REFERENCES USERS(ID) ON DELETE SET NULL;
+
+-- Bảng QUESTIONS: nếu xóa môn học → xóa hết câu hỏi của môn đó
+ALTER TABLE QUESTIONS ADD CONSTRAINT QUESTIONS_SUBJECT_FK
+  FOREIGN KEY (SUBJECT_ID) REFERENCES SUBJECTS(ID) ON DELETE CASCADE;
+
+-- Bảng EXAM_QUESTIONS, EXAM_ATTEMPTS ...: xóa đề → xóa hết dữ liệu liên quan
+ALTER TABLE EXAM_QUESTIONS ADD CONSTRAINT EXAM_QUESTIONS_EXAM_FK
+  FOREIGN KEY (EXAM_ID) REFERENCES EXAMS(ID) ON DELETE CASCADE;
+
+ALTER TABLE EXAM_ATTEMPTS ADD CONSTRAINT ATTEMPTS_EXAM_FK
+  FOREIGN KEY (EXAM_ID) REFERENCES EXAMS(ID) ON DELETE CASCADE;
+
+ALTER TABLE EXAM_RESULTS ADD CONSTRAINT RESULTS_EXAM_FK
+  FOREIGN KEY (EXAM_ID) REFERENCES EXAMS(ID) ON DELETE CASCADE;
+
+-- Bảng CLASS_STUDENTS: cả hai phía đều dùng CASCADE
+ALTER TABLE CLASS_STUDENTS ADD CONSTRAINT CLASS_STUDENTS_CLASS_FK
+  FOREIGN KEY (CLASS_ID)   REFERENCES CLASSES(ID)  ON DELETE CASCADE;
+ALTER TABLE CLASS_STUDENTS ADD CONSTRAINT CLASS_STUDENTS_USER_FK
+  FOREIGN KEY (STUDENT_ID) REFERENCES USERS(ID)    ON DELETE CASCADE;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- INDEXES -->
+    <section class="section" id="indexes">
+      <h2><span class="num">5</span> Chỉ mục (Indexes) — Tối ưu hiệu năng</h2>
+      <p>Mỗi <code>INDEX</code> dưới đây phục vụ một kiểu truy vấn cụ thể trong hệ thống (lọc câu hỏi theo độ khó, lấy đề theo thời gian, ...).</p>
+
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · CREATE INDEX</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Tăng tốc lọc câu hỏi theo môn & độ khó (random đề thi)
+CREATE INDEX IDX_QUESTIONS_SUBJECT     ON QUESTIONS(SUBJECT_ID);
+CREATE INDEX IDX_QUESTIONS_DIFFICULTY  ON QUESTIONS(SUBJECT_ID, DIFFICULTY);
+
+-- Tăng tốc lọc đề thi theo trạng thái + khung giờ
+CREATE INDEX IDX_EXAMS_SUBJECT_STATUS  ON EXAMS(SUBJECT_ID, STATUS);
+CREATE INDEX IDX_EXAMS_STATUS_START    ON EXAMS(STATUS, START_TIME, END_TIME);
+
+-- Tăng tốc "sinh viên X đã làm đề nào", "đề Y do ai thi"
+CREATE INDEX IDX_ATTEMPTS_STUDENT      ON EXAM_ATTEMPTS(STUDENT_ID);
+CREATE INDEX IDX_ATTEMPTS_EXAM         ON EXAM_ATTEMPTS(EXAM_ID);
+CREATE INDEX IDX_RESULTS_STUDENT       ON EXAM_RESULTS(STUDENT_ID);
+
+-- Tăng tốc các truy vấn về lớp & thành viên
+CREATE INDEX IDX_CLASS_STUDENTS_STUDENT ON CLASS_STUDENTS(STUDENT_ID);
+CREATE INDEX IDX_EXAM_QUESTIONS_Q      ON EXAM_QUESTIONS(QUESTION_ID);
+CREATE INDEX IDX_EXAM_CLASSES_CLASS    ON EXAM_CLASSES(CLASS_ID);
+
+-- Truy vết vi phạm
+CREATE INDEX IDX_VIOLATIONS_ATTEMPT    ON VIOLATIONS(ATTEMPT_ID, OCCURRED_AT);
+
+-- Kiểm tra index đã được dùng bởi Oracle
+EXPLAIN PLAN FOR
+  SELECT * FROM EXAM_ATTEMPTS WHERE STUDENT_ID = 1 AND STATUS = 'IN_PROGRESS';
+
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);</code></pre>
+        </div>
+    </section>
+
+    <!-- INSTALL -->
+    <section class="section" id="install">
+      <h2><span class="num">6</span> Cài đặt Oracle 19c</h2>
+      <p>Có 2 cách phổ biến: cài đặt Oracle XE/EE trực tiếp lên máy, hoặc dùng Docker (khuyến nghị cho môi trường dev/test).</p>
+
+      <h3>🐳 Cách 1 — Docker (khuyến nghị)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">Bash · docker</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-bash"># Tải image Oracle 19c từ Docker Hub
+docker pull container-registry.oracle.com/database/express:19.5.0-ee
+
+# Tạo container (mật khẩu SYS = Oracle123)
+docker run -d --name oracle-19c \
+  -p 1521:1521 -p 5500:5500 \
+  -e ORACLE_PWD=Oracle123 \
+  -v oracle-volume:/opt/oracle/oradata \
+  container-registry.oracle.com/database/express:19.5.0-ee
+
+# Xem log (chờ 2-3 phút lần đầu)
+docker logs -f oracle-19c</code></pre>
+      </div>
+
+      <h3>🔌 Kết nối &amp; tạo schema dự án</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Tạo user/schema</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Kết nối với quyền SYSDBA
+sqlplus sys/Oracle123@//localhost:1521/ORCLPDB1 as sysdba
+
+-- Chuyển sang PDB và tạo schema riêng
+ALTER SESSION SET CONTAINER = ORCLPDB1;
+
+CREATE USER tracnghiem IDENTIFIED BY tracnghiem
+  DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
+
+GRANT CONNECT, RESOURCE, CREATE VIEW TO tracnghiem;
+-- (Tùy chọn) cấp quyền DEBUG nếu muốn test trigger/procedure
+GRANT DEBUG CONNECT SESSION TO tracnghiem;
+
+-- Kết nối lại với user vừa tạo
+CONN tracnghiem/tracnghiem@//localhost:1521/ORCLPDB1</code></pre>
+      </div>
+
+      <h3>🪟 Cài Oracle Instant Client (cho Node.js)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">Bash · Instant Client</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-bash"># Tải từ oracle.com/database/technologies/instant-client.html
+# Giải nén và thêm vào PATH
+
+# Windows PowerShell
+$env:OCI_LIB_DIR = "C:\oracle\instantclient_19_19"
+$env:PATH       += ";C:\oracle\instantclient_19_19"
+
+# Linux/macOS
+export OCI_LIB_DIR=/opt/oracle/instantclient_19_19
+export LD_LIBRARY_PATH=$OCI_LIB_DIR:$LD_LIBRARY_PATH</code></pre>
+      </div>
+    </section>
+
+    <!-- INSTALL SCHEMA -->
+    <section class="section" id="install-schema">
+      <h2><span class="num">7</span> Cài schema dự án</h2>
+
+      <h3>📁 File schema có sẵn trong repo</h3>
+      <p>Mở SQL*Plus / SQL Developer / VS Code + extension Oracle và chạy file <code>backend/database/schema.sql</code>:</p>
+
+      <div class="steps">
+        <div class="step"><h4>Mở SQL*Plus</h4><p>Kết nối với user <code>tracnghiem</code> vừa tạo.</p></div>
+        <div class="step"><h4>Chạy schema.sql</h4><p>Lệnh <code>@</code> (hoặc <code>START</code>) cho phép chạy file SQL bất kỳ.</p></div>
+        <div class="step"><h4>(Tùy chọn) chạy seed.sql</h4><p>Tạo môn học mẫu, tạo admin mặc định <code>admin@local / Admin@123</code>.</p></div>
+        <div class="step"><h4>Kiểm tra</h4><p>Danh sách 13 bảng đã sẵn sàng cho backend Node.js kết nối.</p></div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Cài schema</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">SQL&gt; @backend/database/schema.sql
+SQL&gt; @backend/database/seed.sql      -- tùy chọn
+
+-- Kiểm tra các bảng đã được tạo
+SELECT TABLE_NAME, NUM_ROWS
+FROM   USER_TABLES
+ORDER  BY TABLE_NAME;
+
+-- Tạo tài khoản admin mặc định (qua npm script)
+-- npm run seed:admin
+-- Tài khoản: admin@local / Admin@123   (role = ADMIN)
+
+-- Smoke test
+curl http://localhost:5000/api/health</code></pre>
+      </div>
+
+      <div class="note">
+        <strong>💡 Mẹo:</strong> Nếu muốn reset sạch dữ liệu, chạy <code>backend/database/drop.sql</code> (sẽ DROP TOÀN BỘ bảng) trước khi chạy lại <code>schema.sql</code>.
+      </div>
+    </section>
+
+    <!-- DDL -->
+    <section class="section" id="ddl">
+      <h2><span class="num">8</span> Các câu lệnh DDL</h2>
+      <p>DDL (Data Definition Language) dùng để <strong>định nghĩa và quản lý cấu trúc</strong> cơ sở dữ liệu: <code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>, <code>TRUNCATE</code>, <code>RENAME</code>, <code>COMMENT</code>, <code>GRANT</code>, ...</p>
+
+      <h3>8.1. Tạo bảng (trích schema.sql)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · CREATE TABLE</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Tài khoản hệ thống (Admin / Teacher / Student)
+CREATE TABLE USERS (
+  ID            NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+  FULL_NAME     VARCHAR2(120 CHAR) NOT NULL,
+  EMAIL         VARCHAR2(180 CHAR) NOT NULL,
+  PASSWORD_HASH VARCHAR2(255 CHAR) NOT NULL,
+  ROLE          VARCHAR2(20 CHAR)  NOT NULL,
+  STATUS        VARCHAR2(20 CHAR)  DEFAULT 'ACTIVE' NOT NULL,
+  CREATED_AT    TIMESTAMP          DEFAULT SYSTIMESTAMP NOT NULL,
+  UPDATED_AT    TIMESTAMP          DEFAULT SYSTIMESTAMP NOT NULL,
+  CONSTRAINT USERS_EMAIL_UN    UNIQUE (EMAIL),
+  CONSTRAINT USERS_ROLE_CHK   CHECK (ROLE   IN ('ADMIN','TEACHER','STUDENT')),
+  CONSTRAINT USERS_STATUS_CHK CHECK (STATUS IN ('ACTIVE','LOCKED'))
+);
+
+-- Ngân hàng câu hỏi trắc nghiệm A/B/C/D
+CREATE TABLE QUESTIONS (
+  ID             NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+  SUBJECT_ID     NUMBER NOT NULL,
+  CONTENT        VARCHAR2(2000 CHAR) NOT NULL,
+  OPTION_A       VARCHAR2(500 CHAR)  NOT NULL,
+  OPTION_B       VARCHAR2(500 CHAR)  NOT NULL,
+  OPTION_C       VARCHAR2(500 CHAR)  NOT NULL,
+  OPTION_D       VARCHAR2(500 CHAR)  NOT NULL,
+  CORRECT_ANSWER CHAR(1) NOT NULL,
+  DIFFICULTY     VARCHAR2(20 CHAR)  NOT NULL,
+  CHAPTER        VARCHAR2(80 CHAR),
+  POINT          NUMBER(6,2)        DEFAULT 1 NOT NULL,
+  CREATED_BY     NUMBER,
+  CREATED_AT     TIMESTAMP          DEFAULT SYSTIMESTAMP NOT NULL,
+  UPDATED_AT     TIMESTAMP          DEFAULT SYSTIMESTAMP NOT NULL,
+  CONSTRAINT QUESTIONS_SUBJECT_FK    FOREIGN KEY (SUBJECT_ID) REFERENCES SUBJECTS(ID) ON DELETE CASCADE,
+  CONSTRAINT QUESTIONS_CREATED_BY_FK FOREIGN KEY (CREATED_BY) REFERENCES USERS(ID)    ON DELETE SET NULL,
+  CONSTRAINT QUESTIONS_CORRECT_CHK   CHECK (CORRECT_ANSWER IN ('A','B','C','D')),
+  CONSTRAINT QUESTIONS_DIFF_CHK      CHECK (DIFFICULTY     IN ('EASY','MEDIUM','HARD')),
+  CONSTRAINT QUESTIONS_POINT_CHK     CHECK (POINT > 0 AND POINT <= 100)
+);</code></pre>
+      </div>
+
+      <h3>8.2. ALTER TABLE — Sửa bảng</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · ALTER TABLE</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Thêm cột
+ALTER TABLE EXAMS ADD PASS_SCORE NUMBER(4,2) DEFAULT 5 NOT NULL;
+
+-- Thêm ràng buộc CHECK
+ALTER TABLE USERS
+  ADD CONSTRAINT USERS_NAME_LEN_CHK CHECK (LENGTH(FULL_NAME) >= 2);
+
+-- Bật / tắt ràng buộc FK
+ALTER TABLE QUESTIONS ENABLE  CONSTRAINT QUESTIONS_SUBJECT_FK;
+ALTER TABLE QUESTIONS DISABLE CONSTRAINT QUESTIONS_SUBJECT_FK;
+
+-- Đổi tên cột
+ALTER TABLE EXAMS RENAME COLUMN DURATION_MINUTES TO DURATION_MIN;
+
+-- Đổi tên bảng
+ALTER TABLE CLASS_STUDENTS RENAME TO ENROLLMENTS;</code></pre>
+      </div>
+
+      <h3>8.3. Tạo VIEW</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · CREATE VIEW</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- View tổng hợp đề thi (dùng cho dashboard admin)
+CREATE OR REPLACE VIEW V_EXAM_OVERVIEW AS
+SELECT e.ID   AS EXAM_ID,
+       e.TITLE,
+       s.NAME AS SUBJECT_NAME,
+       e.STATUS,
+       e.START_TIME,
+       e.END_TIME,
+       (SELECT COUNT(*) FROM EXAM_QUESTIONS eq WHERE eq.EXAM_ID = e.ID) AS NUM_QUESTIONS,
+       (SELECT COUNT(DISTINCT ec.CLASS_ID) FROM EXAM_CLASSES ec WHERE ec.EXAM_ID = e.ID) AS NUM_CLASSES,
+       (SELECT COUNT(*) FROM EXAM_ATTEMPTS a WHERE a.EXAM_ID = e.ID) AS NUM_ATTEMPTS
+FROM   EXAMS   e
+JOIN   SUBJECTS s ON s.ID = e.SUBJECT_ID;
+
+-- View bảng xếp hạng học viên
+CREATE OR REPLACE VIEW V_STUDENT_RANKING AS
+SELECT u.ID        AS STUDENT_ID,
+       u.FULL_NAME,
+       u.EMAIL,
+       COUNT(r.ID) AS TOTAL_ATTEMPTS,
+       ROUND(AVG(r.SCORE), 2) AS AVG_SCORE,
+       SUM(CASE WHEN r.PASSED = 'Y' THEN 1 ELSE 0 END) AS PASSED_COUNT
+FROM   USERS        u
+LEFT   JOIN EXAM_RESULTS r ON r.STUDENT_ID = u.ID
+WHERE  u.ROLE = 'STUDENT'
+GROUP  BY u.ID, u.FULL_NAME, u.EMAIL;</code></pre>
+      </div>
+    </section>
+
+    <!-- DML -->
+    <section class="section" id="dml">
+      <h2><span class="num">9</span> Các câu lệnh DML</h2>
+      <p>DML (Data Manipulation Language) gồm <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>MERGE</code>. Dưới đây là các thao tác thường gặp trong dự án.</p>
+
+      <h3>9.1. INSERT — Thêm dữ liệu</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · INSERT</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Thêm admin (mật khẩu đã được hash bằng bcrypt)
+INSERT INTO USERS (FULL_NAME, EMAIL, PASSWORD_HASH, ROLE, STATUS)
+VALUES ('Quản Trị Viên', 'admin@local',
+        '$2a$10$abcdefghijklmnopqrstuv',  -- bcrypt hash của 'Admin@123'
+        'ADMIN', 'ACTIVE');
+
+-- Thêm môn học
+INSERT INTO SUBJECTS (NAME, CODE, DESCRIPTION, CREATED_BY)
+VALUES ('Lập trình Web', 'LTW', 'Môn học cơ sở', 1);
+
+-- Thêm câu hỏi
+INSERT INTO QUESTIONS (
+  SUBJECT_ID, CONTENT, OPTION_A, OPTION_B, OPTION_C, OPTION_D,
+  CORRECT_ANSWER, DIFFICULTY, CHAPTER, POINT, CREATED_BY
+) VALUES (
+  1,
+  'Trong React, hook nào dùng để quản lý state?',
+  'useEffect', 'useState', 'useRef', 'useMemo',
+  'B', 'EASY', 'Hook cơ bản', 1, 1
+);
+
+-- Insert nhiều dòng cùng lúc bằng INSERT ALL
+INSERT ALL
+  INTO QUESTIONS (SUBJECT_ID, CONTENT, OPTION_A, OPTION_B, OPTION_C, OPTION_D,
+                   CORRECT_ANSWER, DIFFICULTY, POINT, CREATED_BY)
+  VALUES (1, 'Câu hỏi 1', 'A1', 'B1', 'C1', 'D1', 'A', 'EASY',   1, 1)
+  INTO QUESTIONS (SUBJECT_ID, CONTENT, OPTION_A, OPTION_B, OPTION_C, OPTION_D,
+                   CORRECT_ANSWER, DIFFICULTY, POINT, CREATED_BY)
+  VALUES (1, 'Câu hỏi 2', 'A2', 'B2', 'C2', 'D2', 'B', 'MEDIUM', 2, 1)
+SELECT 1 FROM DUAL;
+
+COMMIT;</code></pre>
+      </div>
+
+      <h3>9.2. UPDATE — Cập nhật</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · UPDATE</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Khóa tài khoản (soft lock thay vì xóa cứng)
+UPDATE USERS
+SET    STATUS = 'LOCKED', UPDATED_AT = SYSTIMESTAMP
+WHERE  EMAIL = 'sinhvien_cantruycap@x.com';
+
+-- Xuất bản đề thi: DRAFT → PUBLISHED
+UPDATE EXAMS
+SET    STATUS = 'PUBLISHED', UPDATED_AT = SYSTIMESTAMP
+WHERE  ID = 10 AND STATUS = 'DRAFT';
+
+-- Hết giờ → EXPIRED + auto-submit
+UPDATE EXAM_ATTEMPTS
+SET    STATUS = 'EXPIRED', SUBMITTED_AT = SYSTIMESTAMP
+WHERE  STATUS = 'IN_PROGRESS'
+  AND  END_TIME &lt;= SYSTIMESTAMP;
+COMMIT;</code></pre>
+      </div>
+
+      <h3>9.3. MERGE — Upsert</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · MERGE (UPSERT)</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Lưu kết quả: nếu (EXAM_ID, STUDENT_ID) đã có → UPDATE, chưa có → INSERT
+MERGE INTO EXAM_RESULTS tgt
+USING (SELECT :exam_id AS EXAM_ID, :student_id AS STUDENT_ID FROM DUAL) src
+ON    (tgt.EXAM_ID = src.EXAM_ID AND tgt.STUDENT_ID = src.STUDENT_ID)
+WHEN MATCHED THEN
+  UPDATE SET tgt.TOTAL_CORRECT = :tc,
+             tgt.TOTAL_WRONG   = :tw,
+             tgt.SCORE         = :score,
+             tgt.PASSED        = :passed,
+             tgt.GRADED_AT     = SYSTIMESTAMP
+WHEN NOT MATCHED THEN
+  INSERT (EXAM_ID, STUDENT_ID, TOTAL_CORRECT, TOTAL_WRONG, SCORE, PASSED)
+  VALUES (:exam_id, :student_id, :tc, :tw, :score, :passed);
+COMMIT;</code></pre>
+      </div>
+    </section>
+
+    <!-- QUERIES -->
+    <section class="section" id="queries">
+      <h2><span class="num">10</span> Truy vấn dữ liệu (SELECT)</h2>
+      <p>Tổng hợp các câu truy vấn quan trọng trong dự án: thống kê, báo cáo, ranking, phân tích gian lận, ...</p>
+
+      <h3>10.1. Tổng quan hệ thống (dashboard admin)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Dashboard tổng quan</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">SELECT
+  (SELECT COUNT(*) FROM USERS         WHERE ROLE = 'STUDENT')       AS TOTAL_STUDENTS,
+  (SELECT COUNT(*) FROM USERS         WHERE ROLE = 'TEACHER')       AS TOTAL_TEACHERS,
+  (SELECT COUNT(*) FROM SUBJECTS)                                    AS TOTAL_SUBJECTS,
+  (SELECT COUNT(*) FROM QUESTIONS)                                   AS TOTAL_QUESTIONS,
+  (SELECT COUNT(*) FROM EXAMS         WHERE STATUS = 'PUBLISHED')   AS PUBLISHED_EXAMS,
+  (SELECT COUNT(*) FROM EXAM_ATTEMPTS)                                AS TOTAL_ATTEMPTS,
+  (SELECT COUNT(*) FROM EXAM_RESULTS)                                 AS TOTAL_RESULTS,
+  (SELECT ROUND(AVG(SCORE), 2) FROM EXAM_RESULTS)                    AS AVG_SCORE
+FROM   DUAL;</code></pre>
+      </div>
+
+      <h3>10.2. Bảng xếp hạng học viên</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Ranking</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">SELECT u.ID, u.FULL_NAME, u.EMAIL,
+       COUNT(r.ID)             AS TOTAL_ATTEMPTS,
+       ROUND(AVG(r.SCORE), 2)  AS AVG_SCORE,
+       MAX(r.SCORE)            AS BEST_SCORE,
+       SUM(CASE WHEN r.PASSED = 'Y' THEN 1 ELSE 0 END) AS PASS_COUNT
+FROM   USERS         u
+JOIN   EXAM_RESULTS  r ON r.STUDENT_ID = u.ID
+JOIN   EXAMS         e ON e.ID         = r.EXAM_ID
+JOIN   SUBJECTS      s ON s.ID         = e.SUBJECT_ID
+WHERE  u.ROLE = 'STUDENT'
+  AND  s.CODE = 'LTW'
+GROUP  BY u.ID, u.FULL_NAME, u.EMAIL
+HAVING COUNT(r.ID) &gt; 0
+ORDER  BY AVG_SCORE DESC NULLS LAST
+FETCH  FIRST 10 ROWS ONLY;</code></pre>
+      </div>
+
+      <h3>10.3. Thống kê lượt thi theo tháng (6 tháng gần nhất)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Time-series</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">SELECT TO_CHAR(a.STARTED_AT, 'YYYY-MM') AS MONTH,
+       COUNT(*)                          AS ATTEMPTS,
+       AVG(a.STATUS)                      AS DUMMY  -- placeholder
+FROM   EXAM_ATTEMPTS a
+WHERE  a.STARTED_AT &gt;= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
+GROUP  BY TO_CHAR(a.STARTED_AT, 'YYYY-MM')
+ORDER  BY MONTH;</code></pre>
+      </div>
+
+      <h3>10.4. Truy vấn con (Subquery)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Subquery</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Học viên CHƯA làm bài thi nào
+SELECT u.*
+FROM   USERS u
+WHERE  u.ROLE = 'STUDENT'
+  AND  NOT EXISTS (
+    SELECT 1 FROM EXAM_ATTEMPTS a WHERE a.STUDENT_ID = u.ID
+);
+
+-- Đề có nhiều lượt thi nhất trong tháng
+SELECT e.ID, e.TITLE, COUNT(a.ID) AS NUM_ATTEMPTS
+FROM   EXAMS         e
+JOIN   EXAM_ATTEMPTS a ON a.EXAM_ID = e.ID
+WHERE  a.STARTED_AT &gt;= DATE '2026-08-01'
+  AND  a.STARTED_AT &lt;  DATE '2026-09-01'
+GROUP  BY e.ID, e.TITLE
+HAVING COUNT(a.ID) = (
+  SELECT MAX(c) FROM (
+    SELECT COUNT(a2.ID) AS c FROM EXAM_ATTEMPTS a2
+    WHERE  a2.STARTED_AT &gt;= DATE '2026-08-01'
+      AND  a2.STARTED_AT &lt;  DATE '2026-09-01'
+    GROUP  BY a2.EXAM_ID
+  )
+);</code></pre>
+      </div>
+
+      <h3>10.5. Phân trang (Pagination) — Oracle 12c+</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · OFFSET / FETCH</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Trang 2, mỗi trang 10 câu hỏi
+SELECT *
+FROM   QUESTIONS
+ORDER  BY ID DESC
+OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;</code></pre>
+      </div>
+
+      <h3>10.6. Hàm phân tích (Analytic Functions)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Window functions</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Xếp hạng học viên theo điểm trong TỪNG đề thi
+SELECT EXAM_ID, STUDENT_ID, SCORE,
+       RANK()       OVER (PARTITION BY EXAM_ID ORDER BY SCORE DESC) AS RANK_IN_EXAM,
+       DENSE_RANK() OVER (PARTITION BY EXAM_ID ORDER BY SCORE DESC) AS DENSE_RANK,
+       ROW_NUMBER() OVER (PARTITION BY EXAM_ID ORDER BY SCORE DESC) AS ROW_NUM,
+       PERCENT_RANK() OVER (PARTITION BY EXAM_ID ORDER BY SCORE)     AS PCT_RANK
+FROM   EXAM_RESULTS;
+
+-- Top 3 học viên theo điểm cho từng đề
+SELECT *
+FROM (
+  SELECT r.EXAM_ID, r.STUDENT_ID, r.SCORE,
+         ROW_NUMBER() OVER (PARTITION BY r.EXAM_ID ORDER BY r.SCORE DESC) AS rn
+  FROM   EXAM_RESULTS r
+)
+WHERE  rn &lt;= 3;</code></pre>
+      </div>
+
+      <h3>10.7. Phát hiện học viên gian lận nhiều</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">SQL · Anti-cheat report</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">SELECT u.FULL_NAME, u.EMAIL, COUNT(v.ID) AS VIOLATION_COUNT
+FROM   VIOLATIONS    v
+JOIN   EXAM_ATTEMPTS a ON a.ID = v.ATTEMPT_ID
+JOIN   USERS        u ON u.ID = a.STUDENT_ID
+GROUP  BY u.FULL_NAME, u.EMAIL
+HAVING COUNT(v.ID) &gt; 0
+ORDER  BY VIOLATION_COUNT DESC
+FETCH  FIRST 10 ROWS ONLY;</code></pre>
+      </div>
+    </section>
+
+    <!-- TRIGGERS -->
+    <section class="section" id="triggers">
+      <h2><span class="num">11</span> Trigger — Đề xuất bổ sung</h2>
+      <div class="note">
+        <strong>📌 Ghi chú:</strong> Schema hiện tại <strong>chưa có trigger Oracle</strong> vì logic nghiệp vụ đang xử lý ở tầng backend (Node.js). Đây là các trigger <strong>đề xuất bổ sung</strong> để demo sức mạnh của Oracle trong môn Quản trị CSDL nâng cao.
+      </div>
+
+      <h3>11.1. Tự động cập nhật UPDATED_AT</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Trigger BEFORE UPDATE</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE TRIGGER TRG_USERS_UPDATED_AT
+BEFORE UPDATE ON USERS
+FOR EACH ROW
+BEGIN
+  :NEW.UPDATED_AT := SYSTIMESTAMP;
+END;
+/
+
+-- Tương tự cho SUBJECTS, QUESTIONS, CLASSES, EXAMS, ...
+CREATE OR REPLACE TRIGGER TRG_EXAMS_UPDATED_AT
+BEFORE UPDATE ON EXAMS
+FOR EACH ROW
+BEGIN
+  :NEW.UPDATED_AT := SYSTIMESTAMP;
+END;
+/
+
+-- Liệt kê tất cả trigger
+SELECT TRIGGER_NAME, TABLE_NAME, STATUS
+FROM   USER_TRIGGERS
+ORDER  BY TABLE_NAME, TRIGGER_NAME;</code></pre>
+      </div>
+
+      <h3>11.2. Validate ngày giờ EXAMS</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Trigger validate</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE TRIGGER TRG_EXAMS_VALIDATE_TIME
+BEFORE INSERT OR UPDATE ON EXAMS
+FOR EACH ROW
+BEGIN
+  IF :NEW.END_TIME &lt;= :NEW.START_TIME THEN
+    RAISE_APPLICATION_ERROR(-20001,
+      'END_TIME phải lớn hơn START_TIME');
+  END IF;
+
+  IF :NEW.DURATION_MINUTES &lt;= 0 THEN
+    RAISE_APPLICATION_ERROR(-20002,
+      'DURATION_MINUTES phải &gt; 0');
+  END IF;
+END;
+/</code></pre>
+      </div>
+
+      <h3>11.3. Ngăn cập nhật câu hỏi đã dùng trong đề PUBLISHED</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Trigger bảo vệ data</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE TRIGGER TRG_QUESTIONS_LOCK_PUBLISHED
+BEFORE UPDATE OR DELETE ON QUESTIONS
+FOR EACH ROW
+DECLARE
+  v_published_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_published_count
+  FROM   EXAM_QUESTIONS eq
+  JOIN   EXAMS e ON e.ID = eq.EXAM_ID
+  WHERE  eq.QUESTION_ID = :OLD.ID
+    AND  e.STATUS       = 'PUBLISHED';
+
+  IF v_published_count &gt; 0 THEN
+    IF UPDATING THEN
+      RAISE_APPLICATION_ERROR(-20030,
+        'Không thể sửa: đang thuộc ' ||
+        v_published_count || ' đề đã xuất bản.');
+    ELSE
+      RAISE_APPLICATION_ERROR(-20031,
+        'Không thể xóa: đang thuộc ' ||
+        v_published_count || ' đề đã xuất bản.');
+    END IF;
+  END IF;
+END;
+/</code></pre>
+      </div>
+
+      <h3>11.4. Tự động chấm điểm khi SUBMIT (thay thế logic ở backend)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Auto-grading trigger</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE TRIGGER TRG_ATTEMPTS_AUTO_GRADE
+AFTER UPDATE OF STATUS ON EXAM_ATTEMPTS
+FOR EACH ROW
+WHEN (NEW.STATUS IN ('SUBMITTED', 'EXPIRED'))
+DECLARE
+  v_total_correct         NUMBER := 0;
+  v_total_wrong           NUMBER := 0;
+  v_total_score           NUMBER := 0;
+  v_result_id             NUMBER;
+  c_max_score     CONSTANT NUMBER := 10;
+BEGIN
+  -- Đếm số câu đúng / sai
+  FOR rec IN (
+    SELECT aa.SELECTED_OPTION, q.CORRECT_ANSWER, q.POINT
+    FROM   ATTEMPT_ANSWERS aa
+    JOIN   QUESTIONS q ON q.ID = aa.QUESTION_ID
+    WHERE  aa.ATTEMPT_ID = :NEW.ID
+  ) LOOP
+    IF rec.SELECTED_OPTION IS NOT NULL
+       AND rec.SELECTED_OPTION = rec.CORRECT_ANSWER THEN
+      v_total_correct := v_total_correct + 1;
+      v_total_score   := v_total_score + rec.POINT;
+    ELSIF rec.SELECTED_OPTION IS NOT NULL THEN
+      v_total_wrong := v_total_wrong + 1;
+    END IF;
+  END LOOP;
+
+  INSERT INTO EXAM_RESULTS (
+    EXAM_ID, STUDENT_ID, TOTAL_CORRECT, TOTAL_WRONG,
+    SCORE, PASSED, SUBMITTED_AT, GRADED_AT
+  ) VALUES (
+    :NEW.EXAM_ID, :NEW.STUDENT_ID, v_total_correct, v_total_wrong,
+    v_total_score,
+    CASE WHEN v_total_score &gt;= (c_max_score / 2) THEN 'Y' ELSE 'N' END,
+    SYSTIMESTAMP, SYSTIMESTAMP
+  )
+  RETURNING ID INTO v_result_id;
+
+  INSERT INTO RESULT_ANSWERS (RESULT_ID, QUESTION_ID, SELECTED_OPTION, IS_CORRECT)
+  SELECT v_result_id, aa.QUESTION_ID, aa.SELECTED_OPTION,
+         CASE
+           WHEN aa.SELECTED_OPTION IS NULL                  THEN 'N'
+           WHEN aa.SELECTED_OPTION = q.CORRECT_ANSWER       THEN 'Y'
+           ELSE 'N'
+         END
+  FROM   ATTEMPT_ANSWERS aa
+  JOIN   QUESTIONS q ON q.ID = aa.QUESTION_ID
+  WHERE  aa.ATTEMPT_ID = :NEW.ID;
+END;
+/</code></pre>
+      </div>
+
+      <h3>11.5. Soft-delete USERS + Audit log trạng thái đề</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Audit trigger</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">-- Bảng audit
+CREATE TABLE AUDIT_EXAM_STATUS (
+  ID          NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+  EXAM_ID     NUMBER NOT NULL,
+  OLD_STATUS  VARCHAR2(20),
+  NEW_STATUS  VARCHAR2(20) NOT NULL,
+  CHANGED_BY  NUMBER,
+  CHANGED_AT  TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL
+);
+
+-- Trigger ghi log
+CREATE OR REPLACE TRIGGER TRG_EXAM_STATUS_AUDIT
+AFTER UPDATE OF STATUS ON EXAMS
+FOR EACH ROW
+WHEN (OLD.STATUS != NEW.STATUS)
+BEGIN
+  INSERT INTO AUDIT_EXAM_STATUS (EXAM_ID, OLD_STATUS, NEW_STATUS, CHANGED_BY)
+  VALUES (:NEW.ID, :OLD.STATUS, :NEW.STATUS,
+          SYS_CONTEXT('USERENV', 'CLIENT_IDENTIFIER'));
+END;
+/
+
+-- Sau khi cập nhật trạng thái đề:
+UPDATE EXAMS SET STATUS = 'PUBLISHED' WHERE ID = 10;
+COMMIT;
+
+-- Xem log
+SELECT * FROM AUDIT_EXAM_STATUS ORDER BY CHANGED_AT DESC;</code></pre>
+      </div>
+    </section>
+
+    <!-- PROCEDURES -->
+    <section class="section" id="procedures">
+      <h2><span class="num">12</span> Procedure / Function</h2>
+
+      <h3>12.1. Function tính điểm</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · FUNCTION</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION FN_CALC_SCORE (p_attempt_id IN NUMBER)
+  RETURN NUMBER
+  DETERMINISTIC
+IS
+  v_total_earned   NUMBER := 0;
+  v_total_possible NUMBER := 0;
+  v_score10        NUMBER := 0;
+  c_max_score CONSTANT NUMBER := 10;
+BEGIN
+  SELECT SUM(CASE
+               WHEN aa.SELECTED_OPTION IS NOT NULL
+                    AND aa.SELECTED_OPTION = q.CORRECT_ANSWER
+               THEN q.POINT ELSE 0
+             END),
+         SUM(q.POINT)
+  INTO   v_total_earned, v_total_possible
+  FROM   ATTEMPT_ANSWERS aa
+  JOIN   QUESTIONS q ON q.ID = aa.QUESTION_ID
+  WHERE  aa.ATTEMPT_ID = p_attempt_id;
+
+  IF v_total_possible &gt; 0 THEN
+    v_score10 := ROUND((v_total_earned / v_total_possible) * c_max_score, 2);
+  END IF;
+
+  RETURN v_score10;
+END FN_CALC_SCORE;
+/
+
+-- Sử dụng
+SELECT FN_CALC_SCORE(1) AS SCORE FROM DUAL;</code></pre>
+      </div>
+
+      <h3>12.2. Procedure chấm điểm batch</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · PROCEDURE</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE PROCEDURE SP_GRADE_ATTEMPT (
+  p_attempt_id IN NUMBER,
+  p_pass_score IN NUMBER DEFAULT 5
+) AS
+  v_score      NUMBER;
+  v_correct    NUMBER := 0;
+  v_wrong      NUMBER := 0;
+  v_result_id  NUMBER;
+BEGIN
+  -- Đếm câu đúng / sai
+  SELECT SUM(CASE
+               WHEN aa.SELECTED_OPTION IS NOT NULL
+                    AND aa.SELECTED_OPTION = q.CORRECT_ANSWER
+               THEN 1 ELSE 0
+             END),
+         SUM(CASE
+               WHEN aa.SELECTED_OPTION IS NOT NULL
+                    AND aa.SELECTED_OPTION != q.CORRECT_ANSWER
+               THEN 1 ELSE 0
+             END)
+  INTO   v_correct, v_wrong
+  FROM   ATTEMPT_ANSWERS aa
+  JOIN   QUESTIONS q ON q.ID = aa.QUESTION_ID
+  WHERE  aa.ATTEMPT_ID = p_attempt_id;
+
+  -- Tính điểm
+  v_score := FN_CALC_SCORE(p_attempt_id);
+
+  -- Lưu kết quả tổng quát
+  INSERT INTO EXAM_RESULTS (EXAM_ID, STUDENT_ID, TOTAL_CORRECT, TOTAL_WRONG, SCORE, PASSED)
+  SELECT a.EXAM_ID, a.STUDENT_ID, v_correct, v_wrong, v_score,
+         CASE WHEN v_score &gt;= p_pass_score THEN 'Y' ELSE 'N' END
+  FROM   EXAM_ATTEMPTS a WHERE a.ID = p_attempt_id
+  RETURNING ID INTO v_result_id;
+
+  -- Lưu chi tiết từng đáp án
+  INSERT INTO RESULT_ANSWERS (RESULT_ID, QUESTION_ID, SELECTED_OPTION, IS_CORRECT)
+  SELECT v_result_id, aa.QUESTION_ID, aa.SELECTED_OPTION,
+         CASE
+           WHEN aa.SELECTED_OPTION IS NULL            THEN 'N'
+           WHEN aa.SELECTED_OPTION = q.CORRECT_ANSWER THEN 'Y'
+           ELSE 'N'
+         END
+  FROM   ATTEMPT_ANSWERS aa
+  JOIN   QUESTIONS q ON q.ID = aa.QUESTION_ID
+  WHERE  aa.ATTEMPT_ID = p_attempt_id;
+
+  COMMIT;
+END SP_GRADE_ATTEMPT;
+/
+
+-- Gọi thử
+CALL SP_GRADE_ATTEMPT(1);</code></pre>
+      </div>
+
+      <h3>12.3. Procedure random câu hỏi theo độ khó</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Random + REF CURSOR</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE PROCEDURE SP_RANDOM_QUESTIONS (
+  p_subject_id   IN  NUMBER,
+  p_easy_count   IN  NUMBER,
+  p_medium_count IN  NUMBER,
+  p_hard_count   IN  NUMBER,
+  p_result       OUT SYS_REFCURSOR
+) AS
+BEGIN
+  OPEN p_result FOR
+    SELECT * FROM (
+      SELECT q.*, 'EASY' AS DIFF_TAG,
+             ROW_NUMBER() OVER (ORDER BY DBMS_RANDOM.VALUE) rn
+      FROM QUESTIONS q
+      WHERE SUBJECT_ID = p_subject_id AND DIFFICULTY = 'EASY'
+    ) WHERE rn &lt;= p_easy_count
+    UNION ALL
+    SELECT * FROM (
+      SELECT q.*, 'MEDIUM' AS DIFF_TAG,
+             ROW_NUMBER() OVER (ORDER BY DBMS_RANDOM.VALUE) rn
+      FROM QUESTIONS q
+      WHERE SUBJECT_ID = p_subject_id AND DIFFICULTY = 'MEDIUM'
+    ) WHERE rn &lt;= p_medium_count
+    UNION ALL
+    SELECT * FROM (
+      SELECT q.*, 'HARD' AS DIFF_TAG,
+             ROW_NUMBER() OVER (ORDER BY DBMS_RANDOM.VALUE) rn
+      FROM QUESTIONS q
+      WHERE SUBJECT_ID = p_subject_id AND DIFFICULTY = 'HARD'
+    ) WHERE rn &lt;= p_hard_count;
+END SP_RANDOM_QUESTIONS;
+/
+
+-- Gọi
+DECLARE
+  v_cursor SYS_REFCURSOR;
+BEGIN
+  SP_RANDOM_QUESTIONS(1, 5, 3, 2, v_cursor);
+END;
+/</code></pre>
+      </div>
+
+      <h3>12.4. Procedure đóng đề hết hạn (kết hợp DBMS_SCHEDULER)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · Job định kỳ</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE PROCEDURE SP_CLOSE_PAST_EXAMS AS
+BEGIN
+  -- Đóng đề đã hết giờ
+  UPDATE EXAMS
+  SET    STATUS = 'CLOSED', UPDATED_AT = SYSTIMESTAMP
+  WHERE  STATUS = 'PUBLISHED'
+    AND  END_TIME &lt; SYSTIMESTAMP;
+
+  -- Auto-submit các attempt quá hạn
+  UPDATE EXAM_ATTEMPTS
+  SET    STATUS = 'EXPIRED', SUBMITTED_AT = SYSTIMESTAMP
+  WHERE  STATUS = 'IN_PROGRESS'
+    AND  END_TIME &lt;= SYSTIMESTAMP;
+
+  COMMIT;
+END SP_CLOSE_PAST_EXAMS;
+/
+
+-- Tạo job chạy mỗi 5 phút
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB (
+    job_name        =&gt; 'JOB_CLOSE_PAST_EXAMS',
+    job_type        =&gt; 'PLSQL_BLOCK',
+    job_action      =&gt; 'BEGIN SP_CLOSE_PAST_EXAMS; END;',
+    repeat_interval =&gt; 'FREQ=MINUTELY; INTERVAL=5',
+    enabled         =&gt; TRUE,
+    comments        =&gt; 'Đóng các đề và attempt đã quá hạn'
+  );
+END;
+/</code></pre>
+      </div>
+
+      <h3>12.5. Package gom nhóm PL/SQL</h3>
+      <div class="code-wrap">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-lang">PL/SQL · PACKAGE</span><button class="copy-btn">Copy</button></div>
+<pre><code class="language-sql">CREATE OR REPLACE PACKAGE PKG_EXAM AS
+  FUNCTION  FN_CALC_SCORE (p_attempt_id IN NUMBER) RETURN NUMBER;
+  PROCEDURE SP_GRADE_ATTEMPT (p_attempt_id IN NUMBER, p_pass_score IN NUMBER DEFAULT 5);
+  PROCEDURE SP_CLOSE_PAST_EXAMS;
+  PROCEDURE SP_RANDOM_QUESTIONS (
+    p_subject_id IN NUMBER, p_easy_count IN NUMBER,
+    p_medium_count IN NUMBER, p_hard_count IN NUMBER,
+    p_result OUT SYS_REFCURSOR
+  );
+END PKG_EXAM;
+/
+
+CREATE OR REPLACE PACKAGE BODY PKG_EXAM AS
+  FUNCTION FN_CALC_SCORE (p_attempt_id IN NUMBER) RETURN NUMBER IS
+    v_total_earned  NUMBER := 0;
+    v_total_possible NUMBER := 0;
+    v_score10       NUMBER := 0;
+    c_max CONSTANT NUMBER := 10;
+  BEGIN
+    SELECT SUM(CASE WHEN aa.SELECTED_OPTION = q.CORRECT_ANSWER THEN q.POINT ELSE 0 END),
+           SUM(q.POINT)
+    INTO   v_total_earned, v_total_possible
+    FROM   ATTEMPT_ANSWERS aa JOIN QUESTIONS q ON q.ID = aa.QUESTION_ID
+    WHERE  aa.ATTEMPT_ID = p_attempt_id;
+    IF v_total_possible &gt; 0 THEN
+      v_score10 := ROUND((v_total_earned / v_total_possible) * c_max, 2);
+    END IF;
+    RETURN v_score10;
+  END FN_CALC_SCORE;
+
+  PROCEDURE SP_GRADE_ATTEMPT (p_attempt_id IN NUMBER, p_pass_score IN NUMBER DEFAULT 5) AS
+    v_score     NUMBER;
+    v_correct   NUMBER := 0;
+    v_wrong     NUMBER := 0;
+    v_result_id NUMBER;
+  BEGIN
+    SELECT SUM(CASE WHEN aa.SELECTED_OPTION IS NOT NULL AND aa.SELECTED_OPTION = q.CORRECT_ANSWER THEN 1 ELSE 0 END),
+           SUM(CASE WHEN aa.SELECTED_OPTION IS NOT NULL AND aa.SELECTED_OPTION != q.CORRECT_ANSWER THEN 1 ELSE 0 END)
+    INTO   v_correct, v_wrong
+    FROM   ATTEMPT_ANSWERS aa JOIN QUESTIONS q ON q.ID = aa.QUESTION_ID
+    WHERE  aa.ATTEMPT_ID = p_attempt_id;
+
+    v_score := FN_CALC_SCORE(p_attempt_id);
+
+    INSERT INTO EXAM_RESULTS (EXAM_ID, STUDENT_ID, TOTAL_CORRECT, TOTAL_WRONG, SCORE, PASSED)
+    SELECT a.EXAM_ID, a.STUDENT_ID, v_correct, v_wrong, v_score,
+           CASE WHEN v_score &gt;= p_pass_score THEN 'Y' ELSE 'N' END
+    FROM   EXAM_ATTEMPTS a WHERE a.ID = p_attempt_id
+    RETURNING ID INTO v_result_id;
+
+    INSERT INTO RESULT_ANSWERS (RESULT_ID, QUESTION_ID, SELECTED_OPTION, IS_CORRECT)
+    SELECT v_result_id, aa.QUESTION_ID, aa.SELECTED_OPTION,
+           CASE WHEN aa.SELECTED_OPTION IS NULL THEN 'N'
+                WHEN aa.SELECTED_OPTION = q.CORRECT_ANSWER THEN 'Y'
+                ELSE 'N' END
+    FROM   ATTEMPT_ANSWERS aa JOIN QUESTIONS q ON q.ID = aa.QUESTION_ID
+    WHERE  aa.ATTEMPT_ID = p_attempt_id;
+    COMMIT;
+  END SP_GRADE_ATTEMPT;
+
+  PROCEDURE SP_CLOSE_PAST_EXAMS AS
+  BEGIN
+    UPDATE EXAMS         SET STATUS = 'CLOSED',  UPDATED_AT   = SYSTIMESTAMP WHERE STATUS = 'PUBLISHED'  AND END_TIME &lt;  SYSTIMESTAMP;
+    UPDATE EXAM_ATTEMPTS SET STATUS = 'EXPIRED', SUBMITTED_AT = SYSTIMESTAMP WHERE STATUS = 'IN_PROGRESS' AND END_TIME &lt;= SYSTIMESTAMP;
+    COMMIT;
+  END SP_CLOSE_PAST_EXAMS;
+
+  PROCEDURE SP_RANDOM_QUESTIONS (
+    p_subject_id IN NUMBER, p_easy_count IN NUMBER,
+    p_medium_count IN NUMBER, p_hard_count IN NUMBER,
+    p_result OUT SYS_REFCURSOR
+  ) AS
+  BEGIN
+    OPEN p_result FOR
+      SELECT * FROM (
+        SELECT q.*, 'EASY' AS DIFF_TAG, ROW_NUMBER() OVER (ORDER BY DBMS_RANDOM.VALUE) rn
+        FROM QUESTIONS q WHERE SUBJECT_ID = p_subject_id AND DIFFICULTY = 'EASY'
+      ) WHERE rn &lt;= p_easy_count
+      UNION ALL SELECT * FROM (
+        SELECT q.*, 'MEDIUM' AS DIFF_TAG, ROW_NUMBER() OVER (ORDER BY DBMS_RANDOM.VALUE) rn
+        FROM QUESTIONS q WHERE SUBJECT_ID = p_subject_id AND DIFFICULTY = 'MEDIUM'
+      ) WHERE rn &lt;= p_medium_count
+      UNION ALL SELECT * FROM (
+        SELECT q.*, 'HARD' AS DIFF_TAG, ROW_NUMBER() OVER (ORDER BY DBMS_RANDOM.VALUE) rn
+        FROM QUESTIONS q WHERE SUBJECT_ID = p_subject_id AND DIFFICULTY = 'HARD'
+      ) WHERE rn &lt;= p_hard_count;
+  END SP_RANDOM_QUESTIONS;
+END PKG_EXAM;
+/
+
+-- Sử dụng package
+SELECT PKG_EXAM.FN_CALC_SCORE(1) FROM DUAL;
+CALL PKG_EXAM.SP_GRADE_ATTEMPT(1);</code></pre>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section class="section" id="conclusion">
+      <h2><span class="num">13</span> Kết luận</h2>
+      <p>Dự án <strong>Hệ thống Quản lý Thi Trắc Nghiệm</strong> khai thác tối đa sức mạnh của Oracle 19c. Cấu trúc rõ ràng với <strong>13 bảng</strong>, <strong>20+ khóa ngoại</strong>, <strong>11 chỉ mục</strong> và các <strong>ràng buộc toàn vẹn chặt chẽ</strong> ở tầng database giúp dữ liệu luôn nhất quán.</p>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th>Đặc điểm Oracle</th><th>Ứng dụng trong dự án</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Identity Column</code></td><td>Khóa chính tự tăng cho 13 bảng, tương đương AUTO_INCREMENT.</td></tr>
+            <tr><td><code>CHECK constraint</code></td><td>Đảm bảo STATUS, ROLE, DIFFICULTY, POINT hợp lệ ngay tầng DB.</td></tr>
+            <tr><td><code>FK ON DELETE CASCADE / SET NULL</code></td><td>Tự động dọn dẹp dữ liệu liên quan khi xóa cha.</td></tr>
+            <tr><td><code>Composite INDEX</code></td><td>Tăng tốc lọc đề thi theo trạng thái và thời gian.</td></tr>
+            <tr><td><code>TRIGGER</code></td><td>Cập nhật UPDATED_AT, audit log, ngăn cập nhật câu hỏi đã dùng.</td></tr>
+            <tr><td><code>PROCEDURE / FUNCTION / PACKAGE</code></td><td>Tính điểm tự động, random câu hỏi, đóng đề hết hạn.</td></tr>
+            <tr><td><code>VIEW</code></td><td>Bảng xếp hạng, danh sách đề — tái sử dụng ở nhiều màn hình.</td></tr>
+            <tr><td><code>MERGE · ANALYTIC FUNCTION</code></td><td>Upsert kết quả, xếp hạng theo đề thi (RANK, DENSE_RANK, ROW_NUMBER).</td></tr>
+            <tr><td><code>DBMS_SCHEDULER</code></td><td>Job định kỳ đóng đề hết hạn, auto-submit attempt quá hạn.</td></tr>
+            <tr><td><code>EXPLAIN PLAN · DBMS_XPLAN</code></td><td>Phân tích câu truy vấn, đánh giá index.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong>🎓 Bài học rút ra:</strong> Thiết kế CSDL chặt chẽ (constraints + index + trigger) giúp <strong>giảm tải logic ở tầng ứng dụng</strong>, <strong>bảo đảm toàn vẹn dữ liệu</strong> ngay cả khi nhiều service cùng truy cập, và là <strong>nền tảng vững chắc</strong> cho các tính năng nghiệp vụ phức tạp như chấm điểm tự động, anti-cheat, báo cáo realtime.
+      </div>
+
+      <h3>📂 File liên quan</h3>
+      <ul>
+        <li><code>backend/database/schema.sql</code> — Script tạo 13 bảng + 11 index</li>
+        <li><code>backend/database/drop.sql</code> — Script xóa toàn bộ (reset)</li>
+        <li><code>backend/database/seed.sql</code> — Dữ liệu mẫu</li>
+        <li><code>backend/src/repositories/*.repo.ts</code> — Lớp truy cập SQL (12 file)</li>
+        <li><code>README.md</code> — Tổng quan dự án đầy đủ</li>
+      </ul>
+    </section>
+
+    <footer>
+      <strong>CSDL Thi Trắc Nghiệm</strong> · Môn học Quản trị CSDL nâng cao (Thạc sĩ) · Oracle 19c · Next.js · Node.js · Express · Socket.IO<br/>
+      &copy; 2026 — Trang trình bày demo tự động sinh từ mã nguồn dự án.
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // ============== Tab switching ==============
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const group = tab.parentElement;
+      const target = tab.dataset.tab;
+      group.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      // hide siblings
+      let panel = tab.parentElement.nextElementSibling;
+      while (panel && !panel.classList.contains('tab-panel')) {
+        panel = panel.nextElementSibling;
+      }
+      if (panel) {
+        panel.parentElement.querySelectorAll('.tab-panel').forEach(p => {
+          // show only those right after this tab group
+        });
+      }
+      // simpler: find panels inside same section
+      const section = tab.closest('.section');
+      section.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const targetPanel = document.getElementById(target);
+      if (targetPanel) targetPanel.classList.add('active');
+    });
+  });
+
+  // ============== Copy button ==============
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.parentElement.nextElementSibling;
+      if (!pre) return;
+      const code = pre.querySelector('code');
+      if (!code) return;
+      const txt = code.innerText;
+      navigator.clipboard.writeText(txt).then(() => {
+        btn.classList.add('copied');
+        btn.textContent = '✓ Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = 'Copy';
+        }, 1800);
+      }).catch(() => {
+        // fallback
+        const range = document.createRange();
+        range.selectNode(code);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+      });
+    });
+  });
+
+  // ============== Highlight active nav on scroll ==============
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.nav a').forEach(a => {
+          a.style.color = '';
+          a.style.borderLeftColor = '';
+        });
+        const link = document.querySelector(`.nav a[href="#${id}"]`);
+        if (link) {
+          link.style.color = 'var(--accent-light)';
+          link.style.borderLeftColor = 'var(--accent)';
+        }
+      }
+    });
+  }, { rootMargin: '-25% 0px -70% 0px' });
+
+  document.querySelectorAll('section.section').forEach(s => observer.observe(s));
+
+  // ============== Smooth scroll with offset ==============
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = a.getAttribute('href');
+      if (target === '#') return;
+      const el = document.querySelector(target);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Trigger Prism highlight after page load (in case it loads late)
+  window.addEventListener('load', () => {
+    if (window.Prism) Prism.highlightAll();
+  });
+</script>
+
+</body>
+</html>

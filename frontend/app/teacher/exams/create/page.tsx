@@ -31,7 +31,7 @@ export default function CreateExamPage() {
     void (async () => {
       try {
         const [s, c] = await Promise.all([
-          api.get("/subjects", { params: { limit: 100 } }) as Promise<Subject[]>,
+          api.get("/subjects/all") as Promise<Subject[]>,
           api.get("/classes") as Promise<ClassEntity[]>,
         ]);
         setSubjects(Array.isArray(s) ? s : []);

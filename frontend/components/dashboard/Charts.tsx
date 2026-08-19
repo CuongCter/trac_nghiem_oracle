@@ -39,9 +39,7 @@ export function ChartCard({ title, description, height = 300, children }: ChartC
     <Card variant="default" padding="md">
       <div className="mb-3">
         <h3 className="font-handrawn text-display-6 text-heading">{title}</h3>
-        {description ? (
-          <p className="text-small text-body-subtle">{description}</p>
-        ) : null}
+        {description ? <p className="text-small text-body-subtle">{description}</p> : null}
       </div>
       <div style={{ width: "100%", height }}>{children}</div>
     </Card>
@@ -132,13 +130,7 @@ export interface PieDatum {
   value: number;
 }
 
-export function PieSeriesChart({
-  data,
-  height = 280,
-}: {
-  data: PieDatum[];
-  height?: number;
-}) {
+export function PieSeriesChart({ data, height = 280 }: { data: PieDatum[]; height?: number }) {
   const colors = [COLORS.brand, COLORS.warning, COLORS.danger, COLORS.brandSoft];
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -159,9 +151,7 @@ export function PieSeriesChart({
           ))}
         </Pie>
         <Tooltip contentStyle={TOOLTIP_STYLE} />
-        <Legend
-          wrapperStyle={{ fontFamily: "Elms Sans", fontSize: 13, color: "#4a3f2e" }}
-        />
+        <Legend wrapperStyle={{ fontFamily: "Elms Sans", fontSize: 13, color: "#4a3f2e" }} />
       </PieChart>
     </ResponsiveContainer>
   );

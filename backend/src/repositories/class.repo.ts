@@ -87,7 +87,7 @@ export const classRepo = {
         `SELECT ID FROM CLASSES WHERE NAME = :name`,
         { name: input.name },
       );
-      const id = lookup.rows[0]?.ID;
+      const id = lookup.rows?.[0]?.ID;
       if (id == null) {
         throw new Error("Không lấy được ID của lớp vừa tạo");
       }
@@ -137,8 +137,10 @@ export const classRepo = {
   },
 
   async remove(id: number): Promise<boolean> {
-    const { rowsAffected } = await execute("DELETE FROM CLASSES WHERE ID = :id", { id });
-    return rowsAffected > 0;
+    return withTransaction(async (conn) => {
+      const res = await conn.execute("DELETE FROM CLASSES WHERE ID = :id", { id });
+      return (res.rowsAffected ?? 0) > 0;
+    });
   },
 
   async findClassIdsForStudent(studentId: number): Promise<number[]> {
