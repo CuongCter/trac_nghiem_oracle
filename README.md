@@ -20,6 +20,7 @@
 - [10. Cài đặt & chạy nhanh](#10-cài-đặt--chạy-nhanh)
 - [11. Tài khoản thử nghiệm](#11-tài-khoản-thử-nghiệm)
 - [12. Tài liệu liên quan](#12-tài-liệu-liên-quan)
+- [13. Sơ đồ CSDL (dbdiagram.io)](#13-sơ-đồ-csdl-dbdiagramio)
 
 ---
 
@@ -492,6 +493,232 @@ Lần đầu truy cập sẽ tự chuyển về `/login`. Sau khi đăng nhập,
 - [`backend/README.md`](./backend/README.md) — Hướng dẫn chi tiết backend, schema, smoke test.
 - [`frontend/README.md`](./frontend/README.md) — Hướng dẫn chi tiết frontend, route, state, chống gian lận.
 - [`frontend/.agents/skills/vercel-react-best-practices/AGENTS.md`](./frontend/.agents/skills/vercel-react-best-practices/AGENTS.md) — Best practices React/Next.js (Vercel).
+
+---
+
+## 13. Sơ đồ CSDL (dbdiagram.io)
+
+Toàn bộ 11 bảng trong `backend/database/schema.sql` được tái tạo bằng [DBML](https://dbml.dbdiagram.io/home/) (Database Markup Language). Copy nguyên khối dưới đây, dán vào [https://dbdiagram.io/d](https://dbdiagram.io/d) để xem sơ đồ quan hệ trực quan.
+
+```dbml
+// =====================================================
+// Hệ thống Quản lý Thi Trắc Nghiệm — DBML Diagram
+// Tương thích: https://dbdiagram.io/d
+// Schema gốc: backend/database/schema.sql (Oracle 19c)
+// =====================================================
+
+// USERS ---------------------------------------------------------
+Table USERS {
+  ID            int          [pk, increment, note: 'IDENTITY']
+  FULL_NAME     varchar(120) [not null]
+  EMAIL         varchar(180) [not null, unique]
+  PASSWORD_HASH varchar(255) [not null]
+  ROLE          varchar(20)  [not null, note: 'CHECK IN (ADMIN, TEACHER, STUDENT)']
+  STATUS        varchar(20)  [not null, default: `ACTIVE`, note: 'CHECK IN (ACTIVE, LOCKED)']
+  CREATED_AT    timestamp    [not null, default: `SYSTIMESTAMP`]
+  UPDATED_AT    timestamp    [not null, default: `SYSTIMESTAMP`]
+
+  Note: 'Người dùng hệ thống (ADMIN / TEACHER / STUDENT)'
+}
+
+// SUBJECTS ------------------------------------------------------
+Table SUBJECTS {
+  ID          int          [pk, increment]
+  NAME        varchar(120) [not null]
+  CODE        varchar(20)  [not null, unique]
+  DESCRIPTION varchar(500)
+  CREATED_BY  int          [ref: > USERS.ID, note: 'ON DELETE SET NULL']
+  CREATED_AT  timestamp    [not null, default: `SYSTIMESTAMP`]
+  UPDATED_AT  timestamp    [not null, default: `SYSTIMESTAMP`]
+
+  Note: 'Môn học'
+}
+
+// QUESTIONS -----------------------------------------------------
+Table QUESTIONS {
+  ID             int            [pk, increment]
+  SUBJECT_ID     int            [not null, ref: > SUBJECTS.ID, note: 'ON DELETE CASCADE']
+  CONTENT        varchar(2000)  [not null]
+  OPTION_A       varchar(500)   [not null]
+  OPTION_B       varchar(500)   [not null]
+  OPTION_C       varchar(500)   [not null]
+  OPTION_D       varchar(500)   [not null]
+  CORRECT_ANSWER char(1)        [not null, note: 'CHECK IN (A, B, C, D)']
+  DIFFICULTY     varchar(20)    [not null, note: 'CHECK IN (EASY, MEDIUM, HARD)']
+  CHAPTER        varchar(80)
+  POINT          decimal(6, 2)  [not null, default: 1, note: 'CHECK (0, 100]']
+  CREATED_BY     int            [ref: > USERS.ID, note: 'ON DELETE SET NULL']
+  CREATED_AT     timestamp      [not null, default: `SYSTIMESTAMP`]
+  UPDATED_AT     timestamp      [not null, default: `SYSTIMESTAMP`]
+
+  Indexes {
+    (SUBJECT_ID)              [name: 'IDX_QUESTIONS_SUBJECT']
+    (SUBJECT_ID, DIFFICULTY)  [name: 'IDX_QUESTIONS_DIFFICULTY']
+  }
+
+  Note: 'Ngân hàng câu hỏi trắc nghiệm'
+}
+
+// CLASSES -------------------------------------------------------
+Table CLASSES {
+  ID         int          [pk, increment]
+  NAME       varchar(120) [not null, unique]
+  TEACHER_ID int          [ref: > USERS.ID, note: 'ON DELETE SET NULL']
+  CREATED_AT timestamp    [not null, default: `SYSTIMESTAMP`]
+  UPDATED_AT timestamp    [not null, default: `SYSTIMESTAMP`]
+
+  Note: 'Lớp học (giáo viên phụ trách)'
+}
+
+Table CLASS_STUDENTS {
+  CLASS_ID   int       [not null, ref: > CLASSES.ID, note: 'ON DELETE CASCADE']
+  STUDENT_ID int       [not null, ref: > USERS.ID, note: 'ON DELETE CASCADE']
+  ADDED_AT   timestamp [not null, default: `SYSTIMESTAMP`]
+
+  Indexes {
+    (CLASS_ID, STUDENT_ID) [pk, name: 'CLASS_STUDENTS_PK']
+    (STUDENT_ID)           [name: 'IDX_CLASS_STUDENTS_STUDENT']
+  }
+
+  Note: 'Quan hệ N-N giữa Lớp và Học viên'
+}
+
+// EXAMS ---------------------------------------------------------
+Table EXAMS {
+  ID                int           [pk, increment]
+  TITLE             varchar(200)  [not null]
+  SUBJECT_ID        int           [not null, ref: > SUBJECTS.ID, note: 'ON DELETE CASCADE']
+  DURATION_MINUTES  int           [not null, note: 'CHECK > 0']
+  TOTAL_QUESTIONS   int           [not null, default: 0]
+  TOTAL_POINTS      decimal(8, 2) [not null, default: 0]
+  START_TIME        timestamp     [not null]
+  END_TIME          timestamp     [not null, note: 'CHECK END_TIME > START_TIME']
+  STATUS            varchar(20)   [not null, default: `DRAFT`, note: 'CHECK IN (DRAFT, PUBLISHED, CLOSED)']
+  SHUFFLE_QUESTIONS char(1)       [not null, default: `Y`]
+  SHUFFLE_OPTIONS   char(1)       [not null, default: `Y`]
+  CREATED_BY        int           [ref: > USERS.ID, note: 'ON DELETE SET NULL']
+  CREATED_AT        timestamp     [not null, default: `SYSTIMESTAMP`]
+  UPDATED_AT        timestamp     [not null, default: `SYSTIMESTAMP`]
+
+  Indexes {
+    (SUBJECT_ID, STATUS)           [name: 'IDX_EXAMS_SUBJECT_STATUS']
+    (STATUS, START_TIME, END_TIME) [name: 'IDX_EXAMS_STATUS_START']
+  }
+
+  Note: '�ề thi'
+}
+
+Table EXAM_QUESTIONS {
+  EXAM_ID     int [not null, ref: > EXAMS.ID, note: 'ON DELETE CASCADE']
+  QUESTION_ID int [not null, ref: > QUESTIONS.ID, note: 'ON DELETE CASCADE']
+  POSITION    int
+
+  Indexes {
+    (EXAM_ID, QUESTION_ID) [pk, name: 'EXAM_QUESTIONS_PK']
+    (QUESTION_ID)          [name: 'IDX_EXAM_QUESTIONS_Q']
+  }
+
+  Note: 'Gán câu h�i vào đề thi'
+}
+
+Table EXAM_CLASSES {
+  EXAM_ID  int [not null, ref: > EXAMS.ID,   note: 'ON DELETE CASCADE']
+  CLASS_ID int [not null, ref: > CLASSES.ID, note: 'ON DELETE CASCADE']
+
+  Indexes {
+    (EXAM_ID, CLASS_ID) [pk, name: 'EXAM_CLASSES_PK']
+    (CLASS_ID)          [name: 'IDX_EXAM_CLASSES_CLASS']
+  }
+
+  Note: 'Gán lớp được phép thi vào đề'
+}
+
+// EXAM_ATTEMPTS -------------------------------------------------
+Table EXAM_ATTEMPTS {
+  ID                int       [pk, increment]
+  EXAM_ID           int       [not null, ref: > EXAMS.ID, note: 'ON DELETE CASCADE']
+  STUDENT_ID        int       [not null, ref: > USERS.ID, note: 'ON DELETE CASCADE']
+  STARTED_AT        timestamp [not null, default: `SYSTIMESTAMP`]
+  END_TIME          timestamp [not null]
+  SUBMITTED_AT      timestamp
+  STATUS            varchar(20) [not null, default: `IN_PROGRESS`, note: 'CHECK IN (IN_PROGRESS, SUBMITTED, EXPIRED)']
+  IS_AUTO_SUBMITTED char(1)   [not null, default: `N`]
+
+  Indexes {
+    (EXAM_ID, STUDENT_ID) [unique, name: 'ATTEMPTS_UN']
+    (STUDENT_ID)          [name: 'IDX_ATTEMPTS_STUDENT']
+    (EXAM_ID)             [name: 'IDX_ATTEMPTS_EXAM (seed.sql)']
+  }
+
+  Note: 'Lượt thi của học viên — UNIQUE(EXAM_ID, STUDENT_ID)'
+}
+
+Table ATTEMPT_ANSWERS {
+  ATTEMPT_ID      int     [not null, ref: > EXAM_ATTEMPTS.ID, note: 'ON DELETE CASCADE']
+  QUESTION_ID     int     [not null, ref: > QUESTIONS.ID,     note: 'ON DELETE CASCADE']
+  SELECTED_OPTION char(1) [note: 'NULL hoặc A/B/C/D']
+
+  Indexes {
+    (ATTEMPT_ID, QUESTION_ID) [pk, name: 'ATTEMPT_ANSWERS_PK']
+  }
+
+  Note: '�áp án đang chọn trong lúc làm bài (chưa chấm)'
+}
+
+// VIOLATIONS ----------------------------------------------------
+Table VIOLATIONS {
+  ID         int        [pk, increment]
+  ATTEMPT_ID int        [not null, ref: > EXAM_ATTEMPTS.ID, note: 'ON DELETE CASCADE']
+  TYPE       varchar(40) [not null, note: 'TAB_SWITCH / FULLSCREEN_EXIT / COPY_PASTE ...']
+  OCCURRED_AT timestamp [not null, default: `SYSTIMESTAMP`]
+
+  Indexes {
+    (ATTEMPT_ID, OCCURRED_AT) [name: 'IDX_VIOLATIONS_ATTEMPT']
+  }
+
+  Note: 'Nhật ký gian lận trong lúc thi'
+}
+
+// EXAM_RESULTS --------------------------------------------------
+Table EXAM_RESULTS {
+  ID            int           [pk, increment]
+  EXAM_ID       int           [not null, ref: > EXAMS.ID, note: 'ON DELETE CASCADE']
+  STUDENT_ID    int           [not null, ref: > USERS.ID, note: 'ON DELETE CASCADE']
+  TOTAL_CORRECT int           [not null, default: 0]
+  TOTAL_WRONG   int           [not null, default: 0]
+  SCORE         decimal(6, 2) [not null, default: 0]
+  PASSED        char(1)       [not null, default: `N`]
+  SUBMITTED_AT  timestamp     [not null, default: `SYSTIMESTAMP`]
+  GRADED_AT     timestamp     [not null, default: `SYSTIMESTAMP`]
+
+  Indexes {
+    (EXAM_ID, STUDENT_ID) [unique, name: 'RESULTS_UN']
+    (STUDENT_ID)          [name: 'IDX_RESULTS_STUDENT']
+  }
+
+  Note: 'Kết quả sau khi chấm'
+}
+
+Table RESULT_ANSWERS {
+  RESULT_ID       int     [not null, ref: > EXAM_RESULTS.ID, note: 'ON DELETE CASCADE']
+  QUESTION_ID     int     [not null, ref: > QUESTIONS.ID,    note: 'ON DELETE CASCADE']
+  SELECTED_OPTION char(1) [note: 'NULL hoặc A/B/C/D']
+  IS_CORRECT      char(1) [not null, default: `N`]
+
+  Indexes {
+    (RESULT_ID, QUESTION_ID) [pk, name: 'RESULT_ANSWERS_PK']
+  }
+
+  Note: 'Chi tiết đúng/sai t�ng câu trong bài thi đã chấm'
+}
+```
+
+**Một số lưu ý khi dán vào dbdiagram.io:**
+
+- DBML không hỗ trợ đầy đủ cú pháp Oracle (sequence `IDENTITY`, kiểu `CHAR`, `SYSTIMESTAMP` default). Trên dbdiagram các kiểu sẽ được hiển thị tương đương (`int`, `varchar`, `timestamp`, …) nhưng vẫn giữ nguyên ý nghĩa — bạn có thể chỉnh lại nhãn cột nếu cần.
+- Quan hệ được suy ra từ `FOREIGN KEY` trong `schema.sql`: `SUBJECTS.CREATED_BY`, `QUESTIONS.{SUBJECT_ID, CREATED_BY}`, `CLASSES.TEACHER_ID`, `CLASS_STUDENTS.{CLASS_ID, STUDENT_ID}`, `EXAMS.{SUBJECT_ID, CREATED_BY}`, `EXAM_QUESTIONS.{EXAM_ID, QUESTION_ID}`, `EXAM_CLASSES.{EXAM_ID, CLASS_ID}`, `EXAM_ATTEMPTS.{EXAM_ID, STUDENT_ID}`, `ATTEMPT_ANSWERS.{ATTEMPT_ID, QUESTION_ID}`, `VIOLATIONS.ATTEMPT_ID`, `EXAM_RESULTS.{EXAM_ID, STUDENT_ID}`, `RESULT_ANSWERS.{RESULT_ID, QUESTION_ID}`.
+- `ON DELETE CASCADE / SET NULL` được ghi chú bằng `note:` ngay trong định nghĩa cột để không mất thông tin.
+- Index phụ `IDX_ATTEMPTS_EXAM` (từ `seed.sql`) cũng được liệt kê trong `EXAM_ATTEMPTS` để khớp với schema thật.
 
 ---
 
